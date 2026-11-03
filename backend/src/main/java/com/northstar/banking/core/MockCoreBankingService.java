@@ -50,6 +50,20 @@ public class MockCoreBankingService {
                 transactions.stream().limit(30).toList(), List.copyOf(cards), insights, now());
     }
 
+    public synchronized Account accountDetails(String accountId) {
+        Account account = accounts.get(accountId);
+        if (account == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demo account was not found.");
+        return account;
+    }
+
+    public synchronized AccountStatement accountStatement(String accountId) {
+        Account account = accountDetails(accountId);
+        List<Transaction> accountTransactions = transactions.stream()
+                .filter(transaction -> accountId.equals(transaction.accountId()))
+                .toList();
+        return new AccountStatement(account, accountTransactions);
+    }
+
     public synchronized Account openCasa(CasaRequest request) {
         if(request==null||request.name()==null||request.name().isBlank()||request.openingBalance()==null||request.openingBalance().signum()<0||!("Savings".equalsIgnoreCase(request.type())||"Current".equalsIgnoreCase(request.type())))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Enter a valid account name, account type and non-negative opening balance.");
         String id="ACC-"+(2048+accounts.size()*1379);if(accounts.containsKey(id))id="ACC-"+sequence.incrementAndGet();

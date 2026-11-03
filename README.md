@@ -16,6 +16,7 @@ The Gmail defaults use `smtp.gmail.com`, port `587`, and STARTTLS. Before starti
 ## What is included
 
 - Overview, CASA accounts, fixed deposits, loan applications, payments, cards, statements, profile maintenance, and spending insights
+- Account, fixed-deposit, and loan submenus with API-backed details and statements; loan repayment schedules are illustrative
 - Mock core API for dashboard, account, transaction, and card data
 - Transfers between sample accounts update the in-memory balances and add debit/credit transaction entries
 - Demo card pause/unpause API
@@ -62,7 +63,10 @@ Vite forwards /api requests to Spring Boot on port 8080.
 - PATCH /api/core/cards/{cardId}
 - POST /api/auth/password-reset/request and /api/auth/password-reset/complete
 - GET/POST /api/modules/casa
+- GET /api/modules/casa/{accountId} and /api/modules/casa/{accountId}/statement
 - GET/POST /api/modules/deposits and /api/modules/loans
+- GET /api/modules/deposits/{depositId} and /api/modules/deposits/{depositId}/statement
+- GET /api/modules/loans/{loanId} and /api/modules/loans/{loanId}/statement
 - POST /api/modules/payments
 - GET/PATCH /api/auth/me and /api/auth/profile
 

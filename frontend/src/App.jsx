@@ -5,7 +5,7 @@ import transfersArt from "../images/transfers.svg";
 import cardsArt from "../images/cards.svg";
 import statementsArt from "../images/statements.svg";
 import insightsArt from "../images/insights.svg";
-import { CasaModule, DepositsModule, LoansModule, PaymentsModule, ProfileModule, PasswordReset } from "./BankingModules.jsx";
+import { CasaModule, DepositsModule, LoansModule, PaymentsModule, ProfileModule, PasswordReset, ProductInquiryModule } from "./BankingModules.jsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const NAV_GROUPS = [
@@ -13,6 +13,19 @@ const NAV_GROUPS = [
   { id: "payments", label: "Money movement", icon: "send", items: ["Payments", "Transfers", "Cards"] },
   { id: "services", label: "Services", icon: "chart", items: ["Statements", "Insights", "Profile"] }
 ];
+const PRODUCT_SUBMENUS = {
+  Accounts: [{ label: "Details", view: "Account Details" }, { label: "Statements", view: "Account Statements" }],
+  Deposits: [{ label: "Details", view: "Deposit Details" }, { label: "Statements", view: "Deposit Statements" }],
+  Loans: [{ label: "Details", view: "Loan Details" }, { label: "Repayment statement", view: "Loan Statements" }]
+};
+const INQUIRY_ROUTES = {
+  "Account Details": { product: "Account", mode: "details", collection: "accounts", endpoint: "/api/modules/casa" },
+  "Account Statements": { product: "Account", mode: "statement", collection: "accounts", endpoint: "/api/modules/casa" },
+  "Deposit Details": { product: "Deposit", mode: "details", collection: "deposits", endpoint: "/api/modules/deposits" },
+  "Deposit Statements": { product: "Deposit", mode: "statement", collection: "deposits", endpoint: "/api/modules/deposits" },
+  "Loan Details": { product: "Loan", mode: "details", collection: "loans", endpoint: "/api/modules/loans" },
+  "Loan Statements": { product: "Loan", mode: "statement", collection: "loans", endpoint: "/api/modules/loans" }
+};
 const NAV_ICONS = { Overview: "home", Accounts: "wallet", Deposits: "chart", Loans: "file", Payments: "send", Transfers: "send", Cards: "card", Statements: "file", Insights: "chart", Profile: "edit" };
 const WIDGETS = [
   { id: "balances", label: "Account balances" },
@@ -156,8 +169,33 @@ function SettingRow({ label, detail }) {
   return <div className="setting-row"><span><b>{label}</b><small>{detail}</small></span><button className={"switch " + (enabled ? "enabled" : "")} aria-pressed={enabled} onClick={() => setEnabled(!enabled)}><i /></button></div>;
 }
 
-function StatementsPage() {
-  return <><PageHeading eyebrow="DOCUMENTS" title="Statements" subtitle="Monthly sample statements for the demo account." art={statementsArt} /><section className="panel page-panel"><h2>Available statements</h2><p>Preview actions use sample content only.</p>{["September 2026", "August 2026", "July 2026", "June 2026"].map((month) => <div className="statement-row" key={month}><span className="statement-icon"><Icon name="file" /></span><span><b>{month} statement</b><small>Everyday account · •••• 2048 · PDF preview</small></span><span className="status">Ready</span><button className="link-btn" onClick={() => window.alert("Sample statement preview. No file or bank data is connected.")}>Preview</button></div>)}</section></>;
+function StatementsPage({ transactions }) {
+  const months = [...new Set(transactions.map((tx) => tx.occurredAt.slice(0, 7)))].sort().reverse();
+  const [selectedMonth, setSelectedMonth] = useState(months[0] || "");
+  const monthTransactions = transactions.filter((tx) => tx.occurredAt.startsWith(selectedMonth));
+  const monthLabel = selectedMonth
+    ? new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(`${selectedMonth}-01T00:00:00+05:30`))
+    : "No activity";
+  const csvCell = (value) => {
+    const raw = String(value);
+    const safe = typeof value !== "number" && /^[=+@\-]/.test(raw) ? `'${raw}` : raw;
+    return `"${safe.replaceAll('"', '""')}"`;
+  };
+  const downloadStatement = () => {
+    if (!monthTransactions.length) return;
+    const rows = [
+      ["Date", "Account ID", "Description", "Category", "Amount (INR)", "Status", "Note"],
+      ...monthTransactions.map((tx) => [tx.occurredAt, tx.accountId, tx.counterparty, tx.category, Number(tx.amount), tx.status, tx.note || ""])
+    ];
+    const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `bytebharat-statement-${selectedMonth}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  return <><PageHeading eyebrow="DOCUMENTS" title="Statements" subtitle="Review and export monthly activity from your demo ledger." art={statementsArt} /><section className="panel page-panel"><div className="panel-heading"><div><h2>Monthly activity statement</h2><p>Sample transactions only. Export creates a CSV file on this device.</p></div><button className="secondary-btn" onClick={downloadStatement} disabled={!monthTransactions.length}>Download CSV</button></div><label>Statement period<select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} disabled={!months.length}>{months.map((month) => <option key={month} value={month}>{new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(`${month}-01T00:00:00+05:30`))}</option>)}</select></label><div className="statement-row"><span className="statement-icon"><Icon name="file" /></span><span><b>{monthLabel} statement</b><small>{monthTransactions.length} demo transaction{monthTransactions.length === 1 ? "" : "s"} · CSV export</small></span><span className="status">{monthTransactions.length ? "Ready" : "No activity"}</span></div>{monthTransactions.length ? <Transactions rows={monthTransactions} /> : <p className="empty-state">There are no transactions for this statement period.</p>}</section></>;
 }
 
 function InsightsPage({ insights }) {
@@ -230,6 +268,9 @@ export default function App() {
   const [deposits, setDeposits] = useState([]);
   const [loans, setLoans] = useState([]);
   const [paymentReceipt, setPaymentReceipt] = useState(null);
+  const [inquiryResult, setInquiryResult] = useState(null);
+  const [inquiryItems, setInquiryItems] = useState([]);
+  const [inquiryBusy, setInquiryBusy] = useState(false);
   const [view, setView] = useState("Overview");
   const [expandedNav, setExpandedNav] = useState({ products: true, payments: true, services: true });
   const [drawer, setDrawer] = useState(false);
@@ -319,11 +360,36 @@ export default function App() {
   async function navigate(item) {
     setView(item); setNotice(""); document.getElementById("sidebar")?.classList.remove("open");
     try {
+      const route = INQUIRY_ROUTES[item];
+      if (route) {
+        setInquiryBusy(true); setInquiryResult(null);
+        let records = route.collection === "accounts" ? data.accounts : await apiRequest(route.endpoint);
+        if (route.collection === "deposits") setDeposits(records);
+        if (route.collection === "loans") setLoans(records);
+        setInquiryItems(records.map((record) => ({ id: record.id, name: record.name || record.purpose || record.id })));
+        if (records.length) {
+          const record = records[0];
+          const suffix = route.mode === "statement" ? "/statement" : "";
+          setInquiryResult(await apiRequest(`${route.endpoint}/${encodeURIComponent(record.id)}${suffix}`));
+        }
+        return;
+      }
       if (item === "Deposits") setDeposits(await apiRequest("/api/modules/deposits"));
       if (item === "Loans") setLoans(await apiRequest("/api/modules/loans"));
       if (item === "Profile") { const userProfile=await apiRequest("/api/auth/me");setProfile(userProfile);setData(current=>current?{...current,profile:userProfile}:current); }
       if (item === "Accounts") await load();
     } catch (error) { setNotice(error.message); }
+    finally { if (INQUIRY_ROUTES[item]) setInquiryBusy(false); }
+  }
+  async function selectInquiryRecord(item, recordId) {
+    const route = INQUIRY_ROUTES[item];
+    if (!route) return;
+    setInquiryBusy(true);
+    try {
+      const suffix = route.mode === "statement" ? "/statement" : "";
+      setInquiryResult(await apiRequest(`${route.endpoint}/${encodeURIComponent(recordId)}${suffix}`));
+    } catch (error) { setNotice(error.message); }
+    finally { setInquiryBusy(false); }
   }
   async function requestReset(payload) {
     return apiFetch("/api/auth/password-reset/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, "Could not request a password reset. Please try again.");
@@ -356,19 +422,25 @@ export default function App() {
   const page = !data ? null : ({
     Overview: <Overview data={data} layout={layout} query={query} setView={setView} />,
     Accounts: <CasaModule accounts={data.accounts} onOpen={openCasa} busy={busy} />,
+    "Account Details": <ProductInquiryModule key={view} product="Account" mode="details" items={inquiryItems} result={inquiryResult} onSelect={(id) => selectInquiryRecord(view, id)} busy={inquiryBusy} />,
+    "Account Statements": <ProductInquiryModule key={view} product="Account" mode="statement" items={inquiryItems} result={inquiryResult} onSelect={(id) => selectInquiryRecord(view, id)} busy={inquiryBusy} />,
     Deposits: <DepositsModule accounts={data.accounts} deposits={deposits} onOpen={openDeposit} busy={busy} />,
+    "Deposit Details": <ProductInquiryModule key={view} product="Deposit" mode="details" items={inquiryItems} result={inquiryResult} onSelect={(id) => selectInquiryRecord(view, id)} busy={inquiryBusy} />,
+    "Deposit Statements": <ProductInquiryModule key={view} product="Deposit" mode="statement" items={inquiryItems} result={inquiryResult} onSelect={(id) => selectInquiryRecord(view, id)} busy={inquiryBusy} />,
     Loans: <LoansModule loans={loans} onApply={applyLoan} busy={busy} />,
+    "Loan Details": <ProductInquiryModule key={view} product="Loan" mode="details" items={inquiryItems} result={inquiryResult} onSelect={(id) => selectInquiryRecord(view, id)} busy={inquiryBusy} />,
+    "Loan Statements": <ProductInquiryModule key={view} product="Loan" mode="statement" items={inquiryItems} result={inquiryResult} onSelect={(id) => selectInquiryRecord(view, id)} busy={inquiryBusy} />,
     Payments: <PaymentsModule accounts={data.accounts} onPay={makePayment} busy={busy} receipt={paymentReceipt} />,
     Profile: <ProfileModule profile={profile || {}} onSave={saveProfile} busy={busy} />,
     Transfers: <TransfersPage data={data} onTransfer={transfer} busy={busy} />,
     Cards: <CardsPage data={data} onFreeze={freezeCard} />,
-    Statements: <StatementsPage />,
+    Statements: <StatementsPage transactions={data.transactions} />,
     Insights: <InsightsPage insights={data.insights} />
   })[view];
   return <div className={"app-frame theme-" + theme + (compact ? " compact" : "")}>
     <aside className="sidebar" id="sidebar"><Brand /><span className="sidebar-label">PERSONAL BANKING</span><nav className="banking-nav" aria-label="Banking navigation">
       <button className={"nav-item primary-nav " + (view === "Overview" ? "active" : "")} onClick={() => navigate("Overview")}><Icon name="home" />Dashboard</button>
-      {NAV_GROUPS.map((group) => <div className="nav-group" key={group.id}><button className="nav-group-toggle" aria-expanded={!!expandedNav[group.id]} onClick={() => setExpandedNav((current) => ({ ...current, [group.id]: !current[group.id] }))}><Icon name={group.icon} /><span>{group.label}</span><i className={expandedNav[group.id] ? "expanded" : ""}>⌄</i></button>{expandedNav[group.id] && <div className="nav-submenu">{group.items.map((item) => <button className={"nav-item " + (view === item ? "active" : "")} key={item} onClick={() => navigate(item)}><span className="nav-dot" />{item}</button>)}</div>}</div>)}
+      {NAV_GROUPS.map((group) => <div className="nav-group" key={group.id}><button className="nav-group-toggle" aria-expanded={!!expandedNav[group.id]} onClick={() => setExpandedNav((current) => ({ ...current, [group.id]: !current[group.id] }))}><Icon name={group.icon} /><span>{group.label}</span><i className={expandedNav[group.id] ? "expanded" : ""}>⌄</i></button>{expandedNav[group.id] && <div className="nav-submenu">{group.items.map((item) => <div className="nav-product" key={item}><button className={"nav-item " + (view === item ? "active" : "")} onClick={() => navigate(item)}><span className="nav-dot" />{item}</button>{PRODUCT_SUBMENUS[item]?.map((subitem) => <button className={"nav-item nav-child " + (view === subitem.view ? "active" : "")} key={subitem.view} onClick={() => navigate(subitem.view)}><span className="nav-dot" />{subitem.label}</button>)}</div>)}</div>}</div>)}
     </nav><div className="sidebar-spacer" /><div className="sidebar-note"><b>Prototype mode</b><span>Transfers update only the in-memory sample ledger.</span></div><div className="profile"><span className="avatar">{data?.profile.initials || "AH"}</span><span><b>{profile?.name || data?.profile.name || "Account holder"}</b><small>Demo user · {profile?.userId || data?.profile.customerId}</small></span></div></aside>
     <main className="main-area"><header className="topbar"><div className="topbar-left"><button className="icon-button mobile-menu" onClick={() => document.getElementById("sidebar").classList.toggle("open")} aria-label="Open navigation"><Icon name="menu" /></button><span className="breadcrumb">Personal banking <b>/</b> {view}</span></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search demo transactions" placeholder="Search activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="icon-button" onClick={() => setNotice("You are all caught up in this demo.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
       <div className="demo-banner">MOCK CORE BANKING · FICTIONAL INR DATA</div>

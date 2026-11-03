@@ -3,6 +3,8 @@ package com.northstar.banking.api;
 import com.northstar.banking.core.ProductService;
 import com.northstar.banking.model.ProductModels.DepositRequest;
 import com.northstar.banking.model.ProductModels.FixedDeposit;
+import com.northstar.banking.model.ProductModels.DepositStatement;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,5 +30,15 @@ public class DepositsController {
     @PostMapping("/api/modules/deposits")
     public FixedDeposit openDeposit(@AuthenticationPrincipal Jwt jwt, @RequestBody DepositRequest request) {
         return products.openDeposit(jwt.getSubject(), request);
+    }
+
+    @GetMapping("/api/modules/deposits/{depositId}")
+    public FixedDeposit depositDetails(@AuthenticationPrincipal Jwt jwt, @PathVariable String depositId) {
+        return products.depositDetails(jwt.getSubject(), depositId);
+    }
+
+    @GetMapping("/api/modules/deposits/{depositId}/statement")
+    public DepositStatement depositStatement(@AuthenticationPrincipal Jwt jwt, @PathVariable String depositId) {
+        return products.depositStatement(jwt.getSubject(), depositId);
     }
 }

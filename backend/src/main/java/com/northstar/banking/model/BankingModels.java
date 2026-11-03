@@ -10,6 +10,7 @@ public final class BankingModels {
     public record Profile(String name, String initials, String customerId, String memberSince) {}
     public record Account(String id, String name, String type, String maskedNumber,
                           BigDecimal balance, String currency, String status) {}
+    public record AccountStatement(Account account, List<Transaction> transactions) {}
     public record Transaction(String id, String accountId, String counterparty, String category,
                               BigDecimal amount, OffsetDateTime occurredAt, String status, String note) {}
     public record BankCard(String id, String name, String maskedNumber, String network,

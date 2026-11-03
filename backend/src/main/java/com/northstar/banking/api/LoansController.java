@@ -3,6 +3,8 @@ package com.northstar.banking.api;
 import com.northstar.banking.core.ProductService;
 import com.northstar.banking.model.ProductModels.Loan;
 import com.northstar.banking.model.ProductModels.LoanRequest;
+import com.northstar.banking.model.ProductModels.LoanStatement;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,5 +30,15 @@ public class LoansController {
     @PostMapping("/api/modules/loans")
     public Loan applyLoan(@AuthenticationPrincipal Jwt jwt, @RequestBody LoanRequest request) {
         return products.applyLoan(jwt.getSubject(), request);
+    }
+
+    @GetMapping("/api/modules/loans/{loanId}")
+    public Loan loanDetails(@AuthenticationPrincipal Jwt jwt, @PathVariable String loanId) {
+        return products.loanDetails(jwt.getSubject(), loanId);
+    }
+
+    @GetMapping("/api/modules/loans/{loanId}/statement")
+    public LoanStatement loanStatement(@AuthenticationPrincipal Jwt jwt, @PathVariable String loanId) {
+        return products.loanStatement(jwt.getSubject(), loanId);
     }
 }
