@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.application.ProductService;
+import com.northstar.banking.application.DepositService;
 import com.northstar.banking.model.ProductModels.DepositRequest;
 import com.northstar.banking.model.ProductModels.FixedDeposit;
 import com.northstar.banking.model.ProductModels.DepositStatement;
@@ -16,29 +16,29 @@ import java.util.List;
 
 @RestController
 public class DepositsController {
-    private final ProductService products;
+    private final DepositService deposits;
 
-    public DepositsController(ProductService products) {
-        this.products = products;
+    public DepositsController(DepositService deposits) {
+        this.deposits = deposits;
     }
 
     @GetMapping("/api/modules/deposits")
     public List<FixedDeposit> deposits(@AuthenticationPrincipal Jwt jwt) {
-        return products.deposits(jwt.getSubject());
+        return deposits.deposits(jwt.getSubject());
     }
 
     @PostMapping("/api/modules/deposits")
     public FixedDeposit openDeposit(@AuthenticationPrincipal Jwt jwt, @RequestBody DepositRequest request) {
-        return products.openDeposit(jwt.getSubject(), request);
+        return deposits.open(jwt.getSubject(), request);
     }
 
     @GetMapping("/api/modules/deposits/{depositId}")
     public FixedDeposit depositDetails(@AuthenticationPrincipal Jwt jwt, @PathVariable String depositId) {
-        return products.depositDetails(jwt.getSubject(), depositId);
+        return deposits.details(jwt.getSubject(), depositId);
     }
 
     @GetMapping("/api/modules/deposits/{depositId}/statement")
     public DepositStatement depositStatement(@AuthenticationPrincipal Jwt jwt, @PathVariable String depositId) {
-        return products.depositStatement(jwt.getSubject(), depositId);
+        return deposits.statement(jwt.getSubject(), depositId);
     }
 }

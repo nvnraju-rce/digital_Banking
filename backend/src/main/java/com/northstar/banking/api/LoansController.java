@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.application.ProductService;
+import com.northstar.banking.application.LoanService;
 import com.northstar.banking.model.ProductModels.Loan;
 import com.northstar.banking.model.ProductModels.LoanRequest;
 import com.northstar.banking.model.ProductModels.LoanStatement;
@@ -16,29 +16,29 @@ import java.util.List;
 
 @RestController
 public class LoansController {
-    private final ProductService products;
+    private final LoanService loans;
 
-    public LoansController(ProductService products) {
-        this.products = products;
+    public LoansController(LoanService loans) {
+        this.loans = loans;
     }
 
     @GetMapping("/api/modules/loans")
     public List<Loan> loans(@AuthenticationPrincipal Jwt jwt) {
-        return products.loans(jwt.getSubject());
+        return loans.loans(jwt.getSubject());
     }
 
     @PostMapping("/api/modules/loans")
     public Loan applyLoan(@AuthenticationPrincipal Jwt jwt, @RequestBody LoanRequest request) {
-        return products.applyLoan(jwt.getSubject(), request);
+        return loans.apply(jwt.getSubject(), request);
     }
 
     @GetMapping("/api/modules/loans/{loanId}")
     public Loan loanDetails(@AuthenticationPrincipal Jwt jwt, @PathVariable String loanId) {
-        return products.loanDetails(jwt.getSubject(), loanId);
+        return loans.details(jwt.getSubject(), loanId);
     }
 
     @GetMapping("/api/modules/loans/{loanId}/statement")
     public LoanStatement loanStatement(@AuthenticationPrincipal Jwt jwt, @PathVariable String loanId) {
-        return products.loanStatement(jwt.getSubject(), loanId);
+        return loans.statement(jwt.getSubject(), loanId);
     }
 }

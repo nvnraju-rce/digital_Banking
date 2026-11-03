@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.application.CoreBankingService;
+import com.northstar.banking.application.CardService;
 import com.northstar.banking.model.BankingModels.BankCard;
 import com.northstar.banking.model.BankingModels.FreezeRequest;
 import org.springframework.http.HttpStatus;
@@ -15,15 +15,15 @@ import java.util.List;
 
 @RestController
 public class CardsController {
-    private final CoreBankingService core;
+    private final CardService cardsService;
 
-    public CardsController(CoreBankingService core) {
-        this.core = core;
+    public CardsController(CardService cardsService) {
+        this.cardsService = cardsService;
     }
 
     @GetMapping("/api/core/cards")
     public List<BankCard> cards() {
-        return core.cards();
+        return cardsService.cards();
     }
 
     @PatchMapping("/api/core/cards/{cardId}")
@@ -31,6 +31,6 @@ public class CardsController {
         if (request == null || request.frozen() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Provide the frozen state.");
         }
-        return core.setCardFrozen(cardId, request.frozen());
+        return cardsService.setFrozen(cardId, request.frozen());
     }
 }

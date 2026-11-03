@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.application.CoreBankingService;
+import com.northstar.banking.application.AccountService;
 import com.northstar.banking.model.BankingModels.Account;
 import com.northstar.banking.model.BankingModels.AccountStatement;
 import com.northstar.banking.model.ProductModels.CasaRequest;
@@ -14,29 +14,29 @@ import java.util.List;
 
 @RestController
 public class AccountsController {
-    private final CoreBankingService core;
+    private final AccountService accounts;
 
-    public AccountsController(CoreBankingService core) {
-        this.core = core;
+    public AccountsController(AccountService accounts) {
+        this.accounts = accounts;
     }
 
     @GetMapping({"/api/core/accounts", "/api/modules/casa"})
     public List<Account> accounts() {
-        return core.accounts();
+        return accounts.accounts();
     }
 
     @PostMapping("/api/modules/casa")
     public Account openCasa(@RequestBody CasaRequest request) {
-        return core.openAccount(request);
+        return accounts.openAccount(request);
     }
 
     @GetMapping("/api/modules/casa/{accountId}")
     public Account accountDetails(@PathVariable String accountId) {
-        return core.accountDetails(accountId);
+        return accounts.details(accountId);
     }
 
     @GetMapping("/api/modules/casa/{accountId}/statement")
     public AccountStatement accountStatement(@PathVariable String accountId) {
-        return core.accountStatement(accountId);
+        return accounts.statement(accountId);
     }
 }
