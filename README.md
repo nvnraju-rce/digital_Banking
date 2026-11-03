@@ -109,7 +109,7 @@ ByteBharat brand icon source: `frontend/images/bytebharat-icon.svg`. Keep reusab
 
 ### Backend structure and extension points
 
-The reference middleware uses module boundaries, interface contracts, business-policy factories, and local/remote repository adapters. ByteBharat applies those ideas in a lightweight modular Spring application: API controllers call module services; services depend on interfaces; adapters connect module ports to the demo ledger.
+The reference middleware uses module boundaries, interface contracts, business-policy factories, and local/remote repository adapters. ByteBharat applies those ideas in a lightweight modular Spring application: dedicated API controllers handle accounts, deposits, loans, transactions, cards, transfers, payments, dashboard data, and health; controllers delegate business operations to module services.
 
 Payments use a Strategy registry. Each rail (`OWN`, `INTERNAL`, `DOMESTIC`, `INTERNATIONAL`) implements `PaymentProcessor`; `PaymentService` discovers registered processors through Spring dependency injection. External rails share a template for validation and ledger debit while each rail supplies its fee policy. `AccountLedgerPort` isolates payment processing from the mock core ledger, and `DemoAccountLedgerAdapter` implements that port. Add a rail by implementing `PaymentProcessor` (or the shared external processor template) and registering it as a Spring component; the controller and registry do not need rail-specific branches.
 
