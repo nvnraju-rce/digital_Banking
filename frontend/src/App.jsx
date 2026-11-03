@@ -366,7 +366,14 @@ export default function App() {
         let records = route.collection === "accounts" ? data.accounts : await apiRequest(route.endpoint);
         if (route.collection === "deposits") setDeposits(records);
         if (route.collection === "loans") setLoans(records);
-        setInquiryItems(records.map((record) => ({ id: record.id, name: record.name || record.purpose || record.id })));
+        setInquiryItems(records.map((record) => ({
+          id: record.id,
+          name: route.collection === "accounts"
+            ? `${record.name} · ${record.maskedNumber}`
+            : route.collection === "deposits"
+              ? `${record.id} · ${record.tenureMonths} months · ${money(record.principal)}`
+              : `${record.id} · ${record.purpose} · ${money(record.amount)}`
+        })));
         if (records.length) {
           const record = records[0];
           const suffix = route.mode === "statement" ? "/statement" : "";

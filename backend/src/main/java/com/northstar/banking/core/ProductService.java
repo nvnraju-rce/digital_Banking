@@ -20,11 +20,12 @@ public class ProductService {
     private static final BigDecimal LOAN_RATE = new BigDecimal("12.00");
     private final Map<String, List<FixedDeposit>> deposits = new HashMap<>();
     private final Map<String, List<Loan>> loans = new HashMap<>();
-    private final AtomicLong sequence = new AtomicLong(1);
+    private final AtomicLong sequence = new AtomicLong(1003);
     private final MockCoreBankingService core;
 
     public ProductService(MockCoreBankingService core) {
         this.core = core;
+        seedDemoProducts();
     }
 
     public synchronized List<FixedDeposit> deposits(String user) {
@@ -115,5 +116,35 @@ public class ProductService {
         return loans.getOrDefault(user, List.of()).stream()
                 .filter(loan -> loan.id().equals(loanId)).findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found."));
+    }
+
+    private void seedDemoProducts() {
+        LocalDate today = LocalDate.now();
+        FixedDeposit travelFund = seededDeposit("FD-1001", "ACC-8831", new BigDecimal("50000.00"), 12, today);
+        FixedDeposit reserveFund = seededDeposit("FD-1002", "ACC-4620", new BigDecimal("25000.00"), 24, today);
+        core.reserveForDeposit(travelFund.sourceAccountId(), travelFund.principal());
+        core.reserveForDeposit(reserveFund.sourceAccountId(), reserveFund.principal());
+        deposits.put("demo", new ArrayList<>(List.of(travelFund, reserveFund)));
+
+        loans.put("demo", new ArrayList<>(List.of(
+                seededLoan("LN-2001", new BigDecimal("500000.00"), 36, "Home improvement", today),
+                seededLoan("LN-2002", new BigDecimal("150000.00"), 24, "Education", today)
+        )));
+    }
+
+    private FixedDeposit seededDeposit(String id, String accountId, BigDecimal principal, int months, LocalDate openedOn) {
+        BigDecimal maturity = principal
+                .multiply(BigDecimal.ONE.add(DEPOSIT_RATE.divide(new BigDecimal("1200"), 8, RoundingMode.HALF_UP)).pow(months))
+                .setScale(2, RoundingMode.HALF_UP);
+        return new FixedDeposit(id, accountId, principal, DEPOSIT_RATE, months, maturity,
+                openedOn.plusMonths(months), "ACTIVE");
+    }
+
+    private Loan seededLoan(String id, BigDecimal amount, int months, String purpose, LocalDate appliedOn) {
+        BigDecimal monthlyRate = LOAN_RATE.divide(new BigDecimal("1200"), 10, RoundingMode.HALF_UP);
+        double power = Math.pow(1 + monthlyRate.doubleValue(), months);
+        BigDecimal emi = amount.multiply(monthlyRate).multiply(BigDecimal.valueOf(power))
+                .divide(BigDecimal.valueOf(power - 1), 2, RoundingMode.HALF_UP);
+        return new Loan(id, amount, months, purpose, emi, "UNDER_REVIEW", appliedOn);
     }
 }
