@@ -36,7 +36,7 @@ public class AuthService {
  @Transactional public AuthModels.UserDetails updateProfile(String userId,String name,String mobileNo,String emailId){
   DigitalUser user=users.findByUserIdIgnoreCase(userId).orElseThrow(()->new AuthFailure("User was not found."));
   if(name==null||name.isBlank()||mobileNo==null||mobileNo.isBlank()||emailId==null||emailId.isBlank()||!emailId.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))throw new AuthFailure("Enter a name, mobile number, and valid email address.");
-  user.updateProfile(name.trim(),mobileNo.trim(),emailId.trim());return user.toUserDetails();
+  user.updateProfile(name.trim(),mobileNo.trim(),emailId.trim());return users.save(user).toUserDetails();
  }
  public static class AuthFailure extends RuntimeException { public AuthFailure(String message){super(message);} }
 }
