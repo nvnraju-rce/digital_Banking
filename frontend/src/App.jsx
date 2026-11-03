@@ -6,7 +6,7 @@ import cardsArt from "../images/cards.svg";
 import statementsArt from "../images/statements.svg";
 import insightsArt from "../images/insights.svg";
 import { CasaModule, DepositsModule, LoansModule, PaymentsModule, ProfileModule, PasswordReset } from "./BankingModules.jsx";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const NAV_GROUPS = [
   { id: "products", label: "Products", icon: "wallet", items: ["Accounts", "Deposits", "Loans"] },
@@ -23,6 +23,7 @@ const WIDGETS = [
   { id: "insight", label: "Monthly insight" }
 ];
 const DEFAULT_WIDGETS = WIDGETS.map((widget) => widget.id);
+const DASHBOARD_PROFILE_VERSION = 1;
 const money = (amount, currency = "INR") =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 2 }).format(amount);
 
@@ -112,7 +113,13 @@ function Widget({ id, data, query, setView }) {
     const pct = Math.min(100, Math.round(Number(data.insights.savedTowardGoal) / Number(data.insights.savingsGoal) * 100));
     return <section className="widget panel goal-panel"><div className="goal-ring" style={{ "--progress": pct + "%" }}><b>{pct}%</b></div><span className="eyebrow">SAVINGS GOAL</span><h2>Build your emergency fund</h2><p>Keep your goal visible and track your progress.</p><div className="progress-track"><i style={{ width: pct + "%" }} /></div><div className="goal-meta"><b>{money(data.insights.savedTowardGoal)} saved</b><span>{money(data.insights.savingsGoal)} goal</span></div></section>;
   }
-  if (id === "insight") return <section className="widget panel insight-panel"><span className="tag">MONTHLY INSIGHT</span><h2>Your savings are growing</h2><p>You have made progress toward your sample savings goal this month.</p><button className="link-btn" onClick={() => setView("Insights")}>View insights →</button></section>;
+  if (id === "insight") {
+    const categories = [...(data.insights.categories || [])].sort((a, b) => Number(b.amount) - Number(a.amount));
+    const topCategory = categories[0];
+    const totalSpend = Number(data.insights.monthlySpend) || 0;
+    const share = topCategory && totalSpend ? Math.round(Number(topCategory.amount) / totalSpend * 100) : 0;
+    return <section className="widget panel insight-panel"><span className="tag">SMART SIGNAL · SAMPLE DATA</span><h2>{topCategory ? `${topCategory.category} is your top spend` : "Your savings are growing"}</h2><p>{topCategory ? `${money(topCategory.amount)} of ${money(totalSpend)} tracked this month (${share}%). This is a transparent summary of the demo categories.` : "You have made progress toward your sample savings goal this month."}</p><button className="link-btn" onClick={() => setView("Insights")}>Explore spending →</button></section>;
+  }
   return null;
 }
 
@@ -162,6 +169,38 @@ function PageHeading({ eyebrow, title, subtitle, art }) {
 }
 
 function CustomizePanel({ layout, setLayout, theme, setTheme, compact, setCompact, close }) {
+  const [profileMessage, setProfileMessage] = useState("");
+  const profileFile = useRef(null);
+  const exportProfile = () => {
+    const profile = { version: DASHBOARD_PROFILE_VERSION, layout, theme, compact };
+    const file = new Blob([JSON.stringify(profile, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "bytebharat-dashboard-profile.json";
+    link.click();
+    URL.revokeObjectURL(url);
+    setProfileMessage("Dashboard profile exported.");
+  };
+  const importProfile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const profile = JSON.parse(await file.text());
+      const validIds = new Set(DEFAULT_WIDGETS);
+      if (profile.version !== DASHBOARD_PROFILE_VERSION || !profile.layout || !Array.isArray(profile.layout.order) || !profile.layout.visible || !["light", "dark"].includes(profile.theme) || typeof profile.compact !== "boolean") throw new Error("Unsupported dashboard profile.");
+      const order = profile.layout.order.filter((id) => validIds.has(id));
+      DEFAULT_WIDGETS.forEach((id) => { if (!order.includes(id)) order.push(id); });
+      const visible = Object.fromEntries(DEFAULT_WIDGETS.map((id) => [id, typeof profile.layout.visible[id] === "boolean" ? profile.layout.visible[id] : true]));
+      setLayout({ order, visible });
+      setTheme(profile.theme);
+      setCompact(profile.compact);
+      setProfileMessage("Dashboard profile imported.");
+    } catch {
+      setProfileMessage("That file is not a supported ByteBharat dashboard profile.");
+    }
+  };
   const toggle = (id) => setLayout((current) => ({ ...current, visible: { ...current.visible, [id]: !current.visible[id] } }));
   const move = (id, direction) => setLayout((current) => {
     const order = [...current.order], at = order.indexOf(id), to = at + direction;
@@ -175,6 +214,7 @@ function CustomizePanel({ layout, setLayout, theme, setTheme, compact, setCompac
     <h3>Widgets</h3><div className="widget-options">{layout.order.map((id, index) => <div className="widget-option" key={id}><label><input type="checkbox" checked={!!layout.visible[id]} onChange={() => toggle(id)} /><span>{WIDGETS.find((w) => w.id === id)?.label}</span></label><span className="move-buttons"><button disabled={index === 0} onClick={() => move(id, -1)} aria-label={"Move " + id + " up"}>↑</button><button disabled={index === layout.order.length - 1} onClick={() => move(id, 1)} aria-label={"Move " + id + " down"}>↓</button></span></div>)}</div>
     <h3>Appearance</h3><div className="appearance-buttons"><button className={theme === "light" ? "chosen" : ""} onClick={() => setTheme("light")}><Icon name="sun" />Light</button><button className={theme === "dark" ? "chosen" : ""} onClick={() => setTheme("dark")}><Icon name="moon" />Dark</button></div>
     <label className="compact-setting"><input type="checkbox" checked={compact} onChange={(e) => setCompact(e.target.checked)} />Use compact spacing</label>
+    <h3>Portable profile</h3><p>Move your widget order, visibility, theme and spacing between browsers. Account data and sign-in details are never included.</p><div className="profile-actions"><button className="secondary-btn" onClick={exportProfile}>Export profile</button><button className="secondary-btn" onClick={() => profileFile.current?.click()}>Import profile</button><input ref={profileFile} className="profile-file" type="file" accept="application/json,.json" onChange={importProfile} /></div>{profileMessage && <p className="profile-message" role="status">{profileMessage}</p>}
     <button className="secondary-btn reset-btn" onClick={() => { localStorage.removeItem("northstar-layout"); localStorage.removeItem("northstar-theme"); localStorage.removeItem("northstar-compact"); location.reload(); }}>Reset dashboard layout</button>
   </aside></div>;
 }

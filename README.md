@@ -20,6 +20,8 @@ The Gmail defaults use `smtp.gmail.com`, port `587`, and STARTTLS. Before starti
 - Transfers between sample accounts update the in-memory balances and add debit/credit transaction entries
 - Demo card pause/unpause API
 - Dashboard personalization: show/hide widgets, move widgets up or down, light/dark theme, and compact spacing
+- Dashboard profiles can be exported/imported as versioned JSON; only layout and appearance settings are included
+- Monthly spending signal highlights the largest demo category with its share of tracked spending (transparent, rule-based summary; no external AI service)
 - Personalization is saved in the browser localStorage
 - Responsive layouts for laptop and mobile
 
