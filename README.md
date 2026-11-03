@@ -117,5 +117,7 @@ The reference middleware uses module boundaries, interface contracts, business-p
 
 Payments use a Strategy registry. Each rail (`OWN`, `INTERNAL`, `DOMESTIC`, `INTERNATIONAL`) implements `PaymentProcessor`; `PaymentService` discovers registered processors through Spring dependency injection. External rails share a template for validation and ledger debit while each rail supplies its fee policy. `AccountLedgerPort` isolates payment processing from the mock core ledger, and `DemoAccountLedgerAdapter` implements that port. Add a rail by implementing `PaymentProcessor` (or the shared external processor template) and registering it as a Spring component; the controller and registry do not need rail-specific branches.
 
+REST controllers call application services. Core banking and product services depend on outbound ports; `MockCoreBankingAdapter` and `MockProductDataAdapter` implement those ports and connect the application to the in-memory `MockCoreBankingService` ledger and product store. This keeps HTTP controllers out of the mock-data path and lets a real adapter replace the demo implementation later.
+
 This remains a modular monolith for local development: the modules share one Spring Boot process and one H2-backed user store, while demo product and ledger state remains in memory. It does not claim independent microservice deployment, service discovery, or distributed messaging.
 "# digital_Banking" 

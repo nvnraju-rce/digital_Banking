@@ -5,4 +5,5 @@ import java.math.BigDecimal;
 public interface AccountLedgerPort {
  TransferResponse transferOwnAccounts(TransferRequest request);
  void debitForPayment(String sourceAccountId,BigDecimal paymentAmount,BigDecimal fee,String category,String memo);
+ void reserveForDeposit(String sourceAccountId,BigDecimal principal);
 }

@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.core.MockCoreBankingService;
+import com.northstar.banking.application.CoreBankingService;
 import com.northstar.banking.model.BankingModels.Account;
 import com.northstar.banking.model.BankingModels.AccountStatement;
 import com.northstar.banking.model.ProductModels.CasaRequest;
@@ -14,20 +14,20 @@ import java.util.List;
 
 @RestController
 public class AccountsController {
-    private final MockCoreBankingService core;
+    private final CoreBankingService core;
 
-    public AccountsController(MockCoreBankingService core) {
+    public AccountsController(CoreBankingService core) {
         this.core = core;
     }
 
     @GetMapping({"/api/core/accounts", "/api/modules/casa"})
     public List<Account> accounts() {
-        return core.dashboard().accounts();
+        return core.accounts();
     }
 
     @PostMapping("/api/modules/casa")
     public Account openCasa(@RequestBody CasaRequest request) {
-        return core.openCasa(request);
+        return core.openAccount(request);
     }
 
     @GetMapping("/api/modules/casa/{accountId}")

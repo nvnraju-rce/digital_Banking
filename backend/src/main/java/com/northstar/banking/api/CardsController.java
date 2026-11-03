@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.core.MockCoreBankingService;
+import com.northstar.banking.application.CoreBankingService;
 import com.northstar.banking.model.BankingModels.BankCard;
 import com.northstar.banking.model.BankingModels.FreezeRequest;
 import org.springframework.http.HttpStatus;
@@ -15,15 +15,15 @@ import java.util.List;
 
 @RestController
 public class CardsController {
-    private final MockCoreBankingService core;
+    private final CoreBankingService core;
 
-    public CardsController(MockCoreBankingService core) {
+    public CardsController(CoreBankingService core) {
         this.core = core;
     }
 
     @GetMapping("/api/core/cards")
     public List<BankCard> cards() {
-        return core.dashboard().cards();
+        return core.cards();
     }
 
     @PatchMapping("/api/core/cards/{cardId}")

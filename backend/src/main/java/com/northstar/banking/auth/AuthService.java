@@ -38,5 +38,6 @@ public class AuthService {
   if(name==null||name.isBlank()||mobileNo==null||mobileNo.isBlank()||emailId==null||emailId.isBlank()||!emailId.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))throw new AuthFailure("Enter a name, mobile number, and valid email address.");
   user.updateProfile(name.trim(),mobileNo.trim(),emailId.trim());return users.save(user).toUserDetails();
  }
+ @Transactional(readOnly=true) public AuthModels.UserDetails currentUser(String userId){return users.findByUserIdIgnoreCase(userId).map(DigitalUser::toUserDetails).orElseThrow(()->new AuthFailure("User was not found."));}
  public static class AuthFailure extends RuntimeException { public AuthFailure(String message){super(message);} }
 }

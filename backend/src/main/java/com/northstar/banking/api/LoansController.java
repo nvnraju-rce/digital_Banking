@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.core.ProductService;
+import com.northstar.banking.application.ProductService;
 import com.northstar.banking.model.ProductModels.Loan;
 import com.northstar.banking.model.ProductModels.LoanRequest;
 import com.northstar.banking.model.ProductModels.LoanStatement;

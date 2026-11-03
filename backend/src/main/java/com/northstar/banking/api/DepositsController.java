@@ -1,6 +1,6 @@
 package com.northstar.banking.api;
 
-import com.northstar.banking.core.ProductService;
+import com.northstar.banking.application.ProductService;
 import com.northstar.banking.model.ProductModels.DepositRequest;
 import com.northstar.banking.model.ProductModels.FixedDeposit;
 import com.northstar.banking.model.ProductModels.DepositStatement;
