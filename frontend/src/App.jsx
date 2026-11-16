@@ -1,11 +1,12 @@
 import brandIcon from "../images/bytebharat-icon.svg";
 import loginHeroArt from "../images/login-hero.svg";
+import overviewArt from "../images/overview-banner.svg";
 import transfersArt from "../images/transfers.svg";
 import cardsArt from "../images/cards.svg";
 import statementsArt from "../images/statements.svg";
 import insightsArt from "../images/insights.svg";
 import { CasaModule, DepositsModule, LoansModule, PaymentsModule, ProfileModule, PasswordReset, ProductInquiryModule } from "./BankingModules.jsx";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const NAV_GROUPS = [
   { id: "products", label: "Products", icon: "wallet", items: ["Accounts", "Deposits", "Loans"] },
@@ -29,8 +30,8 @@ const NAV_ICONS = { Overview: "home", Accounts: "wallet", Deposits: "chart", Loa
 const WIDGETS = [
   { id: "balances", label: "Account balances" },
   { id: "quick", label: "Quick actions" },
-  { id: "spending", label: "Spending chart" },
   { id: "activity", label: "Recent activity" },
+  { id: "spending", label: "Spending chart" },
   { id: "goal", label: "Savings goal" },
   { id: "insight", label: "Monthly insight" }
 ];
@@ -114,39 +115,23 @@ function Spending({ insights }) {
   </section>;
 }
 
-function CategoryBreakdown({ insights, onView }) {
-  const categories = (insights.categories || []).filter((category) => Number(category.amount) > 0);
-  const total = categories.reduce((sum, category) => sum + Number(category.amount), 0);
-  let offset = 0;
-  const stops = categories.map((category) => {
-    const start = offset;
-    offset += total ? Number(category.amount) / total * 100 : 0;
-    return `${category.color || "#7756e8"} ${start}% ${offset}%`;
-  });
-  return <section className="panel category-breakdown">
-    <div className="panel-heading"><div><h2>Spending mix</h2><small>Sample category totals</small></div><button className="link-btn" onClick={() => onView("Insights")}>Details →</button></div>
-    <div className="donut-wrap"><div className="category-donut" style={{ background: `conic-gradient(${stops.join(",")})` }}><div><b>{money(total)}</b><small>Tracked spend</small></div></div></div>
-    <div className="category-legend">{categories.slice(0, 4).map((category) => <div key={category.category}><i style={{ background: category.color || "#7756e8" }} /><span>{category.category}</span><b>{money(category.amount)}</b></div>)}</div>
-  </section>;
-}
-
 function Widget({ id, data, query, setView }) {
   const accounts = data.accounts;
   const total = accounts.reduce((sum, account) => sum + Number(account.balance), 0);
-  if (id === "balances") return <section className="widget balances-grid" data-widget="balances"><BalanceCard total account={{ balance: total, count: accounts.length }} />{accounts.map((account) => <BalanceCard key={account.id} account={account} />)}</section>;
-  if (id === "quick") return <section className="widget quick-actions" data-widget="quick"><button className="quick-btn" onClick={() => setView("Transfers")}><Icon name="send" />Transfer money</button><button className="quick-btn" onClick={() => setView("Accounts")}><Icon name="plus" />Add account</button><button className="quick-btn" onClick={() => setView("Statements")}><Icon name="file" />View statements</button></section>;
-  if (id === "activity") return <section className="widget panel activity-panel" data-widget="activity"><div className="panel-heading"><h2>Recent activity</h2><button className="link-btn" onClick={() => setView("Accounts")}>View accounts →</button></div><Transactions rows={data.transactions} query={query} /></section>;
-  if (id === "spending") return <section className="widget spending-layout" data-widget="spending"><Spending insights={data.insights} /><CategoryBreakdown insights={data.insights} onView={setView} /></section>;
+  if (id === "balances") return <section className="widget balances-grid"><BalanceCard total account={{ balance: total, count: accounts.length }} />{accounts.map((account) => <BalanceCard key={account.id} account={account} />)}</section>;
+  if (id === "quick") return <section className="widget quick-actions"><button className="quick-btn" onClick={() => setView("Transfers")}><Icon name="send" />Transfer money</button><button className="quick-btn" onClick={() => setView("Accounts")}><Icon name="plus" />Add account</button><button className="quick-btn" onClick={() => setView("Statements")}><Icon name="file" />View statements</button></section>;
+  if (id === "activity") return <section className="widget panel activity-panel"><div className="panel-heading"><h2>Recent activity</h2><button className="link-btn" onClick={() => setView("Accounts")}>View accounts →</button></div><Transactions rows={data.transactions} query={query} /></section>;
+  if (id === "spending") return <section className="widget"><Spending insights={data.insights} /></section>;
   if (id === "goal") {
-  const pct = Math.min(100, Math.round(Number(data.insights.savedTowardGoal) / Number(data.insights.savingsGoal) * 100));
-    return <section className="widget panel goal-panel" data-widget="goal"><div className="goal-ring" style={{ "--progress": pct + "%" }}><b>{pct}%</b></div><span className="eyebrow">SAVINGS GOAL</span><h2>Build your emergency fund</h2><p>Keep your goal visible and track your progress.</p><div className="progress-track"><i style={{ width: pct + "%" }} /></div><div className="goal-meta"><b>{money(data.insights.savedTowardGoal)} saved</b><span>{money(data.insights.savingsGoal)} goal</span></div></section>;
+    const pct = Math.min(100, Math.round(Number(data.insights.savedTowardGoal) / Number(data.insights.savingsGoal) * 100));
+    return <section className="widget panel goal-panel"><div className="goal-ring" style={{ "--progress": pct + "%" }}><b>{pct}%</b></div><span className="eyebrow">SAVINGS GOAL</span><h2>Build your emergency fund</h2><p>Keep your goal visible and track your progress.</p><div className="progress-track"><i style={{ width: pct + "%" }} /></div><div className="goal-meta"><b>{money(data.insights.savedTowardGoal)} saved</b><span>{money(data.insights.savingsGoal)} goal</span></div></section>;
   }
   if (id === "insight") {
     const categories = [...(data.insights.categories || [])].sort((a, b) => Number(b.amount) - Number(a.amount));
     const topCategory = categories[0];
     const totalSpend = Number(data.insights.monthlySpend) || 0;
     const share = topCategory && totalSpend ? Math.round(Number(topCategory.amount) / totalSpend * 100) : 0;
-    return <section className="widget panel insight-panel" data-widget="insight"><span className="tag">SMART SIGNAL · SAMPLE DATA</span><h2>{topCategory ? `${topCategory.category} is your top spend` : "Your savings are growing"}</h2><p>{topCategory ? `${money(topCategory.amount)} of ${money(totalSpend)} tracked this month (${share}%). This is a transparent summary of the demo categories.` : "You have made progress toward your sample savings goal this month."}</p><button className="link-btn" onClick={() => setView("Insights")}>Explore spending →</button></section>;
+    return <section className="widget panel insight-panel"><span className="tag">SMART SIGNAL · SAMPLE DATA</span><h2>{topCategory ? `${topCategory.category} is your top spend` : "Your savings are growing"}</h2><p>{topCategory ? `${money(topCategory.amount)} of ${money(totalSpend)} tracked this month (${share}%). This is a transparent summary of the demo categories.` : "You have made progress toward your sample savings goal this month."}</p><button className="link-btn" onClick={() => setView("Insights")}>Explore spending →</button></section>;
   }
   return null;
 }
@@ -298,6 +283,7 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem("northstar-layout")) || { order: DEFAULT_WIDGETS, visible: Object.fromEntries(DEFAULT_WIDGETS.map((id) => [id, true])) }; }
     catch { return { order: DEFAULT_WIDGETS, visible: Object.fromEntries(DEFAULT_WIDGETS.map((id) => [id, true])) }; }
   });
+  const totalBalance = useMemo(() => data?.accounts.reduce((sum, account) => sum + Number(account.balance), 0) || 0, [data]);
 
   async function apiFetch(path, options = {}, fallback = "The request could not be completed.") {
     let response;
@@ -459,15 +445,17 @@ export default function App() {
     Insights: <InsightsPage insights={data.insights} />
   })[view];
   return <div className={"app-frame theme-" + theme + (compact ? " compact" : "")}>
-    <aside className="sidebar" id="sidebar"><Brand /><span className="sidebar-label">MENU</span><nav className="banking-nav" aria-label="Banking navigation">
+    <aside className="sidebar" id="sidebar"><span className="sidebar-label">PERSONAL BANKING</span><nav className="banking-nav" aria-label="Banking navigation">
       <button className={"nav-item primary-nav " + (view === "Overview" ? "active" : "")} onClick={() => navigate("Overview")}><Icon name="home" />Dashboard</button>
       {NAV_GROUPS.map((group) => <div className="nav-group" key={group.id}><button className="nav-group-toggle" aria-expanded={!!expandedNav[group.id]} onClick={() => setExpandedNav((current) => ({ ...current, [group.id]: !current[group.id] }))}><Icon name={group.icon} /><span>{group.label}</span><i className={expandedNav[group.id] ? "expanded" : ""}>⌄</i></button>{expandedNav[group.id] && <div className="nav-submenu">{group.items.map((item) => <div className="nav-product" key={item}><button className={"nav-item " + (view === item ? "active" : "")} onClick={() => navigate(item)}><span className="nav-dot" />{item}</button>{PRODUCT_SUBMENUS[item]?.map((subitem) => <button className={"nav-item nav-child " + (view === subitem.view ? "active" : "")} key={subitem.view} onClick={() => navigate(subitem.view)}><span className="nav-dot" />{subitem.label}</button>)}</div>)}</div>}</div>)}
     </nav><div className="sidebar-spacer" /><div className="sidebar-note"><b>Prototype mode</b><span>Transfers update only the in-memory sample ledger.</span></div><div className="profile"><span className="avatar">{data?.profile.initials || "AH"}</span><span><b>{profile?.name || data?.profile.name || "Account holder"}</b><small>Demo user · {profile?.userId || data?.profile.customerId}</small></span></div></aside>
-    <main className="main-area"><header className="topbar"><div className="topbar-left"><button className="icon-button mobile-menu" onClick={() => document.getElementById("sidebar").classList.toggle("open")} aria-label="Open navigation"><Icon name="menu" /></button><div className="topbar-welcome"><span className="eyebrow">YOUR FINANCIAL OVERVIEW</span><h2>Welcome back, {(profile?.name || data?.profile.name || "there").split(" ")[0]}!</h2></div></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search demo transactions" placeholder="Search your activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setNotice("You are all caught up in this demo.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
+    <main className="main-area"><header className="topbar"><div className="topbar-left"><Brand /><button className="icon-button mobile-menu" onClick={() => document.getElementById("sidebar").classList.toggle("open")} aria-label="Open navigation"><Icon name="menu" /></button><span className="breadcrumb">Personal banking <b>/</b> {view}</span></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search demo transactions" placeholder="Search activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="icon-button" onClick={() => setNotice("You are all caught up in this demo.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
       <div className="demo-banner">MOCK CORE BANKING · FICTIONAL INR DATA</div>
       {apiError && <div className="inline-error">{apiError}<button onClick={load}>Retry</button></div>}
       {notice && <div className="inline-notice">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}
-      {view === "Overview" ? <div className="page-heading"><div><span className="eyebrow">ACCOUNT SUMMARY · SAMPLE DATA</span><h1>Financial overview</h1><p>Balances, activity, and spending across your demo accounts.</p></div><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div> : <div className="page-meta"><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div>}
+      {view === "Overview" ? <div className="page-heading"><div><span className="eyebrow">MONDAY · YOUR MONEY AT A GLANCE</span><h1>{"Good morning, " + (data?.profile.name.split(" ")[0] || "there")}</h1><p>Your sample account position and recent activity.</p></div><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div> : <div className="page-meta"><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div>}
+      {view === "Overview" && <section className="overview-art-banner"><div><span className="eyebrow">BYTEBHARAT · YOUR FINANCIAL OVERVIEW</span><h2>Everyday banking,<br/>at a glance.</h2><p>Accounts, savings and activity in one place.</p></div><img src={overviewArt} alt="Savings, growth and cards illustration" /></section>}
+      {view === "Overview" && <div className="overview-summary"><span><b>{money(totalBalance)}</b> total across {data?.accounts.length || 0} sample accounts</span><span className="summary-status"><i /> API connected</span></div>}
       {page}
       <footer className="page-footer">ByteBharat is a fictional prototype. Sample data only · No real banking or payment services are connected.</footer>
     </main>
