@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-public class MockProductDataAdapter implements ProductDataPort {
+public class ProductDataAdapter implements ProductDataPort {
     private final Map<String, List<FixedDeposit>> deposits = new HashMap<>();
     private final Map<String, List<Loan>> loans = new HashMap<>();
 

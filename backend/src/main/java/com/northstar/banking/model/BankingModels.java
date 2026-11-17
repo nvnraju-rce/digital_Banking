@@ -22,6 +22,6 @@ public final class BankingModels {
                                     List<BankCard> cards, Insights insights, OffsetDateTime updatedAt) {}
     public record TransferRequest(String sourceAccountId, String destinationAccountId,
                                   BigDecimal amount, String memo) {}
-    public record TransferResponse(String message, boolean simulated, DashboardResponse dashboard) {}
+    public record TransferResponse(String message, boolean recorded, DashboardResponse dashboard) {}
     public record FreezeRequest(Boolean frozen) {}
 }

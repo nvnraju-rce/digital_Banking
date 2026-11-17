@@ -7,7 +7,6 @@ import statementsArt from "../images/statements.svg";
 import insightsArt from "../images/insights.svg";
 import { CasaModule, DepositsModule, LoansModule, PaymentsModule, ProfileModule, PasswordReset, ProductInquiryModule } from "./BankingModules.jsx";
 import { useEffect, useMemo, useRef, useState } from "react";
-
 const NAV_GROUPS = [
   { id: "products", label: "Products", icon: "wallet", items: ["Accounts", "Deposits", "Loans"] },
   { id: "payments", label: "Money movement", icon: "send", items: ["Payments", "Transfers", "Cards"] },
@@ -39,7 +38,6 @@ const DEFAULT_WIDGETS = WIDGETS.map((widget) => widget.id);
 const DASHBOARD_PROFILE_VERSION = 1;
 const money = (amount, currency = "INR") =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 2 }).format(amount);
-
 function Icon({ name, size = 18 }) {
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
   const paths = {
@@ -61,11 +59,9 @@ function Icon({ name, size = 18 }) {
   };
   return <svg {...common}>{paths[name] || paths.home}</svg>;
 }
-
 function Brand() {
-  return <div className="brand"><span className="brand-mark"><img src={brandIcon} alt="" /></span><span>BYTEBHARAT<small>FINANCIAL · DEMO</small></span></div>;
+  return <div className="brand"><span className="brand-mark"><img src={brandIcon} alt="" /></span><span>BYTEBHARAT<small>FINANCIAL · DIGITAL</small></span></div>;
 }
-
 function Welcome({ onLogin, error, busy, onResetRequest, onResetComplete }) {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
@@ -73,7 +69,7 @@ function Welcome({ onLogin, error, busy, onResetRequest, onResetComplete }) {
   const [resetMessage, setResetMessage] = useState("");
   return <main className="welcome">
     <section className="welcome-hero"><Brand /><div className="welcome-copy"><span className="eyebrow">Banking, made clear</span><h1>Your money.<br />Moving forward.</h1><p>A calm, connected place to see your accounts, make a plan, and stay on top of everyday finances.</p>        <img className="welcome-art" src={loginHeroArt} alt="Secure mobile banking illustration" />
-<div className="security-note"><b>DEMO MODE</b>This prototype uses fictional data and has no connection to a bank or payment network.</div></div><span className="hero-caption">EVERYDAY BANKING · INTERACTIVE PROTOTYPE</span></section>
+<div className="security-note"><b>ACCOUNT INFORMATION</b>No bank is connected. Transactions stay in this workspace and do not move real funds.</div></div><span className="hero-caption">EVERYDAY BANKING · MADE SIMPLE</span></section>
     <section className="welcome-panel"><div className="welcome-top"><span className="welcome-region"><i/> INDIA · DIGITAL BANKING</span><span>◎ English</span></div><div className="login-intro"><span className="eyebrow">THE BYTEBHARAT EXPERIENCE</span><h2>Banking that moves<br/>with you.</h2><p>Accounts, savings and payments in one connected place.</p></div>{reset ? <div className="welcome-card login-form"><PasswordReset onBack={(message)=>{setReset(false);setResetMessage(message);}} onRequest={onResetRequest} onComplete={onResetComplete} busy={busy}/></div> : <form className="welcome-card login-form" onSubmit={(event)=>{event.preventDefault();onLogin(userId,password);}}>
       <div className="welcome-symbol"><Icon name="wallet" size={24} /></div><h2>Sign in to ByteBharat</h2><p>Use your digital banking user ID and password.</p>
       <label>User ID<input autoComplete="username" required value={userId} onChange={(e)=>setUserId(e.target.value)} placeholder="Enter your user ID" /></label>
@@ -81,40 +77,35 @@ function Welcome({ onLogin, error, busy, onResetRequest, onResetComplete }) {
       {error && <div className="login-error" role="alert">{error}</div>}
       <button className="primary-btn full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}<Icon name="arrow" size={16} /></button>
       <button type="button" className="link-btn forgot-link" onClick={()=>{setReset(true);setResetMessage("");}}>Forgot password?</button>
-      <p className="demo-credentials">Demo: <b>demo</b> / <b>Demo@12345</b></p>
-    </form>}<div className="login-highlights"><div><i>01</i><span><b>Accounts</b><small>Everyday banking</small></span></div><div><i>02</i><span><b>Grow</b><small>Deposits & insights</small></span></div><div><i>03</i><span><b>Payments</b><small>Made simple</small></span></div></div>{resetMessage&&<div className="welcome-card reset-message">{resetMessage}</div>}<p className="welcome-footer">Privacy · Security · Accessibility · ByteBharat is a fictional product</p></section>
+    </form>}<div className="login-highlights"><div><i>01</i><span><b>Accounts</b><small>Everyday banking</small></span></div><div><i>02</i><span><b>Grow</b><small>Deposits & insights</small></span></div><div><i>03</i><span><b>Payments</b><small>Made simple</small></span></div></div>{resetMessage&&<div className="welcome-card reset-message">{resetMessage}</div>}<p className="welcome-footer">Privacy · Security · Accessibility · Banking for everyday life</p></section>
   </main>;
 }
-
 function BalanceCard({ account, total }) {
   return <article className={"balance-card panel " + (total ? "balance-total" : "")}>
     <div className="balance-label">{total ? "Total available balance" : account.name}<span className={total ? "" : "balance-icon"}>{total ? "•••" : <Icon name={account.type === "Savings" ? "chart" : "wallet"} size={17} />}</span></div>
     <strong className="balance-amount">{money(account.balance, account.currency)}</strong>
-    <span className="balance-meta">{total ? "Across " + account.count + " demo accounts" : account.type + " · " + account.maskedNumber}</span>
+    <span className="balance-meta">{total ? "Across " + account.count + " accounts" : account.type + " · " + account.maskedNumber}</span>
     {total && <span className="balance-change">↑ 2.4% this month</span>}
   </article>;
 }
-
 function Transactions({ rows, query = "" }) {
   const filtered = rows.filter((tx) => (tx.counterparty + tx.category + tx.note).toLowerCase().includes(query.toLowerCase()));
-  if (!filtered.length) return <p className="empty-state">No matching demo transactions.</p>;
+  if (!filtered.length) return <p className="empty-state">No matching transactions.</p>;
   return <div className="transaction-list">{filtered.map((tx) => <div className="transaction-row" key={tx.id}>
     <span className="transaction-icon">{tx.category === "Transfer" ? "↗" : tx.category === "Food & drink" ? "☕" : tx.category === "Transport" ? "◉" : tx.category === "Home & bills" ? "▣" : "▤"}</span>
-    <span className="transaction-copy"><b>{tx.counterparty}</b><small>{tx.category} · {tx.status === "DEMO" ? "Demo transfer" : tx.note || "Posted"}</small></span>
+    <span className="transaction-copy"><b>{tx.counterparty}</b><small>{tx.category} · {tx.status === "RECORDED" ? "Transfer" : tx.note || "Posted"}</small></span>
     <time>{new Date(tx.occurredAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</time>
     <strong className={Number(tx.amount) > 0 ? "credit" : ""}>{Number(tx.amount) > 0 ? "+" : "−"}{money(Math.abs(Number(tx.amount)))}</strong>
   </div>)}</div>;
 }
-
 function Spending({ insights }) {
   const max = Math.max(...insights.weeklySpend.map(Number), 1);
   return <section className="panel spending-panel">
-    <div className="panel-heading"><div><strong>{money(insights.monthlySpend)}</strong><small>Sample spending this month</small></div><select aria-label="Spending period"><option>This month</option><option>Last month</option></select></div>
+    <div className="panel-heading"><div><strong>{money(insights.monthlySpend)}</strong><small>Spending this month</small></div><select aria-label="Spending period"><option>This month</option><option>Last month</option></select></div>
     <div className="bars" aria-label="Weekly spending chart">{insights.weeklySpend.map((amount, i) => <div className="bar-column" key={i}><div className="bar" style={{ height: Math.max(9, Number(amount) / max * 100) + "%" }} title={money(amount)} /><small>W{i + 1}</small></div>)}</div>
-    <div className="chart-legend"><i /> Spending · sample totals</div>
+    <div className="chart-legend"><i /> Spending · totals</div>
   </section>;
 }
-
 function Widget({ id, data, query, setView }) {
   const accounts = data.accounts;
   const total = accounts.reduce((sum, account) => sum + Number(account.balance), 0);
@@ -131,44 +122,38 @@ function Widget({ id, data, query, setView }) {
     const topCategory = categories[0];
     const totalSpend = Number(data.insights.monthlySpend) || 0;
     const share = topCategory && totalSpend ? Math.round(Number(topCategory.amount) / totalSpend * 100) : 0;
-    return <section className="widget panel insight-panel"><span className="tag">SMART SIGNAL · SAMPLE DATA</span><h2>{topCategory ? `${topCategory.category} is your top spend` : "Your savings are growing"}</h2><p>{topCategory ? `${money(topCategory.amount)} of ${money(totalSpend)} tracked this month (${share}%). This is a transparent summary of the demo categories.` : "You have made progress toward your sample savings goal this month."}</p><button className="link-btn" onClick={() => setView("Insights")}>Explore spending →</button></section>;
+    return <section className="widget panel insight-panel"><span className="tag">SPENDING INSIGHT</span><h2>{topCategory ? `${topCategory.category} is your top spend` : "Your savings are growing"}</h2><p>{topCategory ? `${money(topCategory.amount)} of ${money(totalSpend)} recorded this month (${share}%). This is a transparent summary of your spending.` : "You have made progress toward your savings goal this month."}</p><button className="link-btn" onClick={() => setView("Insights")}>Explore spending →</button></section>;
   }
   return null;
 }
-
 function Overview({ data, layout, query, setView }) {
   return <div className="widget-stack">{layout.order.filter((id) => layout.visible[id]).map((id) => <Widget id={id} key={id} data={data} query={query} setView={setView} />)}</div>;
 }
-
 function AccountsPage({ data, setView }) {
-  return <><PageHeading eyebrow="YOUR MONEY, IN ONE PLACE" title="Accounts" subtitle="Balances and activity across your demo accounts." /><div className="two-column"><section className="panel page-panel"><h2>Deposit accounts</h2><p>All values are fictional sample data.</p>{data.accounts.map((account) => <div className="account-row" key={account.id}><span className="account-icon"><Icon name="wallet" /></span><span className="account-copy"><b>{account.name}</b><small>{account.type} · {account.maskedNumber}</small></span><strong>{money(account.balance, account.currency)}</strong></div>)}</section><section className="panel activity-panel"><div className="panel-heading"><h2>Recent activity</h2><button className="link-btn" onClick={() => setView("Transfers")}>Make a transfer →</button></div><Transactions rows={data.transactions.slice(0, 5)} /></section></div></>;
+  return <><PageHeading eyebrow="YOUR MONEY, IN ONE PLACE" title="Accounts" subtitle="Balances and activity across your accounts." /><div className="two-column"><section className="panel page-panel"><h2>Deposit accounts</h2><p>Balances shown are for display; no real funds are held.</p>{data.accounts.map((account) => <div className="account-row" key={account.id}><span className="account-icon"><Icon name="wallet" /></span><span className="account-copy"><b>{account.name}</b><small>{account.type} · {account.maskedNumber}</small></span><strong>{money(account.balance, account.currency)}</strong></div>)}</section><section className="panel activity-panel"><div className="panel-heading"><h2>Recent activity</h2><button className="link-btn" onClick={() => setView("Transfers")}>Make a transfer →</button></div><Transactions rows={data.transactions.slice(0, 5)} /></section></div></>;
 }
-
 function TransfersPage({ data, onTransfer, busy }) {
   const [source, setSource] = useState(data.accounts[0]?.id || "");
   const [destination, setDestination] = useState(data.accounts[1]?.id || "");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
-  return <><PageHeading eyebrow="MOVE MONEY" title="Transfers" subtitle="Try a local demo transfer between sample accounts." art={transfersArt} /><div className="two-column"><form className="panel page-panel transfer-form" onSubmit={(event) => { event.preventDefault(); onTransfer({ sourceAccountId: source, destinationAccountId: destination, amount: Number(amount), memo }); }}>
-    <h2>Make a transfer</h2><p>The mock backend updates balances in memory. It does not move real money.</p>
+  return <><PageHeading eyebrow="MOVE MONEY" title="Transfers" subtitle="Transfer between accounts." art={transfersArt} /><div className="two-column"><form className="panel page-panel transfer-form" onSubmit={(event) => { event.preventDefault(); onTransfer({ sourceAccountId: source, destinationAccountId: destination, amount: Number(amount), memo }); }}>
+    <h2>Make a transfer</h2><p>Transfers update the account ledger only. No real funds move.</p>
     <label>From<select value={source} onChange={(e) => setSource(e.target.value)}>{data.accounts.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.maskedNumber} · {money(a.balance)}</option>)}</select></label>
     <label>To<select value={destination} onChange={(e) => setDestination(e.target.value)}>{data.accounts.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.maskedNumber}</option>)}</select></label>
     <label>Amount (INR)<input required min="0.01" step="0.01" inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
     <label>Memo (optional)<input maxLength="80" placeholder="Add a note" value={memo} onChange={(e) => setMemo(e.target.value)} /></label>
-    <div className="notice">DEMO ONLY · This transfer remains in server memory and resets when Spring Boot restarts.</div>
-    <button className="primary-btn" disabled={busy || !data.accounts.length}>{busy ? "Processing demo…" : "Review and apply demo transfer"}</button>
-  </form><section className="panel page-panel"><h2>How the mock core works</h2><p>This demo runs a small in-memory ledger.</p><div className="info-row"><b>Account balances</b><span>Updated in the backend service</span></div><div className="info-row"><b>Transaction history</b><span>Debit and credit entries are added</span></div><div className="info-row"><b>Persistence</b><span>Resets after a server restart</span></div></section></div></>;
+    <div className="notice">Transfers remain in server memory and reset when the service restarts. No real funds move.</div>
+    <button className="primary-btn" disabled={busy || !data.accounts.length}>{busy ? "Processing…" : "Review and apply transfer"}</button>
+  </form><section className="panel page-panel"><h2>How the account ledger works</h2><p>The account ledger keeps transfer activity in server memory and resets when the service restarts.</p><div className="info-row"><b>Account balances</b><span>Updated in the backend service</span></div><div className="info-row"><b>Transaction history</b><span>Debit and credit entries are added</span></div><div className="info-row"><b>Persistence</b><span>Resets after a server restart</span></div></section></div></>;
 }
-
 function CardsPage({ data, onFreeze }) {
-  return <><PageHeading eyebrow="PAYMENTS" title="Cards" subtitle="Manage demo card controls and limits." art={cardsArt} /><div className="two-column"><section className="panel page-panel"><h2>My card</h2><p>Masked card details only. No real card number is used.</p>{data.cards.map((card) => <div className="bank-card-preview" key={card.id}><div className="card-top"><span className="chip" /><b>{card.network}</b></div><div className="card-number">{card.maskedNumber}</div><div className="card-top"><span>{card.name}</span><span>{card.expiry}</span></div><div className="card-actions"><span className={card.frozen ? "status paused" : "status"}>{card.frozen ? "Paused" : "Active"}</span><button className="secondary-btn" onClick={() => onFreeze(card)}>{card.frozen ? "Unpause demo card" : "Pause demo card"}</button></div></div>)}</section><section className="panel page-panel"><h2>Card controls</h2><p>Switches are local demo settings.</p><SettingRow label="Online purchases" detail="Allow online card transactions" /><SettingRow label="Contactless payments" detail="Tap to pay at supported terminals" /><SettingRow label="International use" detail="Use card outside your home country" /></section></div></>;
+  return <><PageHeading eyebrow="PAYMENTS" title="Cards" subtitle="Manage card controls and limits." art={cardsArt} /><div className="two-column"><section className="panel page-panel"><h2>My card</h2><p>Masked card details only. No real card number is used.</p>{data.cards.map((card) => <div className="bank-card-preview" key={card.id}><div className="card-top"><span className="chip" /><b>{card.network}</b></div><div className="card-number">{card.maskedNumber}</div><div className="card-top"><span>{card.name}</span><span>{card.expiry}</span></div><div className="card-actions"><span className={card.frozen ? "status paused" : "status"}>{card.frozen ? "Paused" : "Active"}</span><button className="secondary-btn" onClick={() => onFreeze(card)}>{card.frozen ? "Unpause card" : "Pause card"}</button></div></div>)}</section><section className="panel page-panel"><h2>Card controls</h2><p>These controls apply to your account card.</p><SettingRow label="Online purchases" detail="Allow online card transactions" /><SettingRow label="Contactless payments" detail="Tap to pay at supported terminals" /><SettingRow label="International use" detail="Use card outside your home country" /></section></div></>;
 }
-
 function SettingRow({ label, detail }) {
   const [enabled, setEnabled] = useState(label !== "International use");
   return <div className="setting-row"><span><b>{label}</b><small>{detail}</small></span><button className={"switch " + (enabled ? "enabled" : "")} aria-pressed={enabled} onClick={() => setEnabled(!enabled)}><i /></button></div>;
 }
-
 function StatementsPage({ transactions }) {
   const months = [...new Set(transactions.map((tx) => tx.occurredAt.slice(0, 7)))].sort().reverse();
   const [selectedMonth, setSelectedMonth] = useState(months[0] || "");
@@ -195,17 +180,14 @@ function StatementsPage({ transactions }) {
     link.click();
     URL.revokeObjectURL(url);
   };
-  return <><PageHeading eyebrow="DOCUMENTS" title="Statements" subtitle="Review and export monthly activity from your demo ledger." art={statementsArt} /><section className="panel page-panel"><div className="panel-heading"><div><h2>Monthly activity statement</h2><p>Sample transactions only. Export creates a CSV file on this device.</p></div><button className="secondary-btn" onClick={downloadStatement} disabled={!monthTransactions.length}>Download CSV</button></div><label>Statement period<select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} disabled={!months.length}>{months.map((month) => <option key={month} value={month}>{new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(`${month}-01T00:00:00+05:30`))}</option>)}</select></label><div className="statement-row"><span className="statement-icon"><Icon name="file" /></span><span><b>{monthLabel} statement</b><small>{monthTransactions.length} demo transaction{monthTransactions.length === 1 ? "" : "s"} · CSV export</small></span><span className="status">{monthTransactions.length ? "Ready" : "No activity"}</span></div>{monthTransactions.length ? <Transactions rows={monthTransactions} /> : <p className="empty-state">There are no transactions for this statement period.</p>}</section></>;
+  return <><PageHeading eyebrow="DOCUMENTS" title="Statements" subtitle="Review and export monthly activity from your account ledger." art={statementsArt} /><section className="panel page-panel"><div className="panel-heading"><div><h2>Monthly activity statement</h2><p>Account activity. Export creates a CSV file on this device.</p></div><button className="secondary-btn" onClick={downloadStatement} disabled={!monthTransactions.length}>Download CSV</button></div><label>Statement period<select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)} disabled={!months.length}>{months.map((month) => <option key={month} value={month}>{new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(`${month}-01T00:00:00+05:30`))}</option>)}</select></label><div className="statement-row"><span className="statement-icon"><Icon name="file" /></span><span><b>{monthLabel} statement</b><small>{monthTransactions.length} transaction{monthTransactions.length === 1 ? "" : "s"} · CSV export</small></span><span className="status">{monthTransactions.length ? "Ready" : "No activity"}</span></div>{monthTransactions.length ? <Transactions rows={monthTransactions} /> : <p className="empty-state">There are no transactions for this statement period.</p>}</section></>;
 }
-
 function InsightsPage({ insights }) {
-  return <><PageHeading eyebrow="SPENDING & SAVING" title="Insights" subtitle="Illustrative monthly spending categories." art={insightsArt} /><div className="two-column"><Spending insights={insights} /><section className="panel page-panel"><h2>Spending categories</h2><p>Mock monthly totals</p>{insights.categories.map((category) => <div className="category-row" key={category.category}><span className="category-dot" style={{ background: category.color }} /><b>{category.category}</b><strong>{money(category.amount)}</strong></div>)}</section></div></>;
+  return <><PageHeading eyebrow="SPENDING & SAVING" title="Insights" subtitle="Monthly spending categories." art={insightsArt} /><div className="two-column"><Spending insights={insights} /><section className="panel page-panel"><h2>Spending categories</h2><p>Monthly totals</p>{insights.categories.map((category) => <div className="category-row" key={category.category}><span className="category-dot" style={{ background: category.color }} /><b>{category.category}</b><strong>{money(category.amount)}</strong></div>)}</section></div></>;
 }
-
 function PageHeading({ eyebrow, title, subtitle, art }) {
   return <div className="page-heading"><div><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{subtitle}</p></div>{art && <img className="page-illustration" src={art} alt="" loading="lazy" />}</div>;
 }
-
 function CustomizePanel({ layout, setLayout, theme, setTheme, compact, setCompact, close }) {
   const [profileMessage, setProfileMessage] = useState("");
   const profileFile = useRef(null);
@@ -256,7 +238,6 @@ function CustomizePanel({ layout, setLayout, theme, setTheme, compact, setCompac
     <button className="secondary-btn reset-btn" onClick={() => { localStorage.removeItem("northstar-layout"); localStorage.removeItem("northstar-theme"); localStorage.removeItem("northstar-compact"); location.reload(); }}>Reset dashboard layout</button>
   </aside></div>;
 }
-
 export default function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -285,7 +266,6 @@ export default function App() {
     catch { return { order: DEFAULT_WIDGETS, visible: Object.fromEntries(DEFAULT_WIDGETS.map((id) => [id, true])) }; }
   });
   const totalBalance = useMemo(() => data?.accounts.reduce((sum, account) => sum + Number(account.balance), 0) || 0, [data]);
-
   async function apiFetch(path, options = {}, fallback = "The request could not be completed.") {
     let response;
     try {
@@ -293,7 +273,6 @@ export default function App() {
     } catch {
       throw new Error("Unable to connect to ByteBharat. Check that the backend is running and try again.");
     }
-
     let body = null;
     if (response.status !== 204) {
       const responseText = await response.text();
@@ -304,7 +283,6 @@ export default function App() {
         }
       }
     }
-
     if (!response.ok) {
       const backendMessage = body?.message || body?.detail || body?.title;
       const friendlyByStatus = {
@@ -322,7 +300,6 @@ export default function App() {
     }
     return body;
   }
-
   async function load(accessToken = token, authenticatedProfile = profile) {
     setLoading(true); setApiError("");
     try {
@@ -333,7 +310,6 @@ export default function App() {
       setApiError(error.message || "Could not load your banking dashboard. Please try again.");
     } finally { setLoading(false); }
   }
-
   useEffect(() => {
     let icon = document.querySelector('link[rel="icon"]');
     if (!icon) { icon = document.createElement("link"); icon.rel = "icon"; document.head.appendChild(icon); }
@@ -348,7 +324,6 @@ export default function App() {
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [mobileNavOpen]);
-
   async function login(userId, password) {
     setAuthBusy(true); setAuthError("");
     try {
@@ -411,9 +386,9 @@ export default function App() {
   async function completeReset(payload) {
     await apiFetch("/api/auth/password-reset/complete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, "Could not reset your password. Please try again.");
   }
-  async function openCasa(payload) { setBusy(true); try { await apiRequest("/api/modules/casa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); await load(); setNotice("Demo account opened."); } catch(e) { setNotice(e.message); } finally { setBusy(false); } }
-  async function openDeposit(payload) { setBusy(true); try { const item=await apiRequest("/api/modules/deposits",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setDeposits(current=>[...current,item]);setNotice("Fixed deposit opened in the demo."); } catch(e) { setNotice(e.message); } finally { setBusy(false); } }
-  async function applyLoan(payload) { setBusy(true); try { const item=await apiRequest("/api/modules/loans",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setLoans(current=>[...current,item]);setNotice("Demo loan application submitted."); } catch(e) { setNotice(e.message); } finally { setBusy(false); } }
+  async function openCasa(payload) { setBusy(true); try { await apiRequest("/api/modules/casa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); await load(); setNotice("Account opened."); } catch(e) { setNotice(e.message); } finally { setBusy(false); } }
+  async function openDeposit(payload) { setBusy(true); try { const item=await apiRequest("/api/modules/deposits",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setDeposits(current=>[...current,item]);setNotice("Fixed deposit opened "); } catch(e) { setNotice(e.message); } finally { setBusy(false); } }
+  async function applyLoan(payload) { setBusy(true); try { const item=await apiRequest("/api/modules/loans",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setLoans(current=>[...current,item]);setNotice("Loan application submitted."); } catch(e) { setNotice(e.message); } finally { setBusy(false); } }
   async function makePayment(payload) { setBusy(true);setPaymentReceipt(null);try {const item=await apiRequest("/api/modules/payments",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setPaymentReceipt(item);await load();}catch(e){setNotice(e.message);}finally{setBusy(false);}}
   async function saveProfile(payload) { setBusy(true);try{const updated=await apiRequest("/api/auth/profile",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});setProfile(updated);setData(current=>current?{...current,profile:updated}:current);setNotice("Profile details saved.");}catch(e){setNotice(e.message);}finally{setBusy(false);}}
   async function transfer(payload) {
@@ -426,12 +401,11 @@ export default function App() {
   }
   async function freezeCard(card) {
     try {
-      await apiFetch("/api/core/cards/" + card.id, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ frozen: !card.frozen }) }, "Could not update the demo card.");
+      await apiFetch("/api/core/cards/" + card.id, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ frozen: !card.frozen }) }, "Could not update the card.");
       await load();
     } catch (error) { setNotice(error.message); }
   }
-
-  if (loading && token && !data) return <div className="loading-screen"><div className="spinner" /><p>Connecting to the mock core banking API…</p></div>;
+  if (loading && token && !data) return <div className="loading-screen"><div className="spinner" /><p>Connecting to the banking service…</p></div>;
   if (!token || !data) return <Welcome busy={authBusy} error={authError || apiError} onLogin={login} onResetRequest={requestReset} onResetComplete={completeReset} />;
   const page = !data ? null : ({
     Overview: <Overview data={data} layout={layout} query={query} setView={setView} />,
@@ -455,19 +429,18 @@ export default function App() {
     <aside className={"sidebar" + (mobileNavOpen ? " open" : "")} id="sidebar"><span className="sidebar-label">PERSONAL BANKING</span><nav className="banking-nav" aria-label="Banking navigation">
       <button className={"nav-item primary-nav " + (view === "Overview" ? "active" : "")} onClick={() => navigate("Overview")} aria-label="Dashboard" data-tooltip="Dashboard"><Icon name="home" /><span className="nav-text">Dashboard</span></button>
       {NAV_GROUPS.map((group) => <div className="nav-group" key={group.id}><button className="nav-group-toggle" aria-label={group.label} data-tooltip={group.label} aria-expanded={!!expandedNav[group.id]} onClick={() => setExpandedNav((current) => ({ ...current, [group.id]: !current[group.id] }))}><Icon name={group.icon} /><span>{group.label}</span><i className={expandedNav[group.id] ? "expanded" : ""}>⌄</i></button>{expandedNav[group.id] && <div className="nav-submenu">{group.items.map((item) => <div className="nav-product" key={item}><button className={"nav-item " + (view === item ? "active" : "")} onClick={() => navigate(item)}><span className="nav-dot" />{item}</button>{PRODUCT_SUBMENUS[item]?.map((subitem) => <button className={"nav-item nav-child " + (view === subitem.view ? "active" : "")} key={subitem.view} onClick={() => navigate(subitem.view)}><span className="nav-dot" />{subitem.label}</button>)}</div>)}</div>}</div>)}
-    </nav><div className="sidebar-spacer" /><div className="sidebar-note"><b>Prototype mode</b><span>Transfers update only the in-memory sample ledger.</span></div><div className="profile"><span className="avatar">{data?.profile.initials || "AH"}</span><span><b>{profile?.name || data?.profile.name || "Account holder"}</b><small>Demo user · {profile?.userId || data?.profile.customerId}</small></span></div></aside>
+    </nav><div className="sidebar-spacer" /><div className="sidebar-note"><b>Account activity</b><span>Transfers update only the in-memory account ledger.</span></div><div className="profile"><span className="avatar">{data?.profile.initials || "AH"}</span><span><b>{profile?.name || data?.profile.name || "Account holder"}</b><small>Account · {profile?.userId || data?.profile.customerId}</small></span></div></aside>
     {mobileNavOpen && <button className="sidebar-backdrop" aria-label="Close navigation menu" onClick={() => setMobileNavOpen(false)} />}
-    <main className="main-area"><header className="topbar"><div className="topbar-left"><button className="icon-button mobile-menu" onClick={() => setMobileNavOpen((open) => !open)} aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileNavOpen} aria-controls="sidebar"><Icon name={mobileNavOpen ? "close" : "menu"} /></button><span className="breadcrumb"><strong>Personal banking</strong><b>/</b> {view}</span></div><div className="topbar-brand"><Brand /></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search demo transactions" placeholder="Search activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="icon-button" onClick={() => setNotice("You are all caught up in this demo.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
-      <div className="demo-banner">MOCK CORE BANKING · FICTIONAL INR DATA</div>
+    <main className="main-area"><header className="topbar"><div className="topbar-left"><button className="icon-button mobile-menu" onClick={() => setMobileNavOpen((open) => !open)} aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileNavOpen} aria-controls="sidebar"><Icon name={mobileNavOpen ? "close" : "menu"} /></button><span className="breadcrumb"><strong>Personal banking</strong><b>/</b> {view}</span></div><div className="topbar-brand"><Brand /></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search transactions" placeholder="Search activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="icon-button" onClick={() => setNotice("You are all caught up.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
+      <div className="service-banner">BYTEBHARAT · BANKING SERVICES</div>
       {apiError && <div className="inline-error">{apiError}<button onClick={load}>Retry</button></div>}
       {notice && <div className="inline-notice">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}
-      {view === "Overview" ? <div className="page-heading"><div><span className="eyebrow">MONDAY · YOUR MONEY AT A GLANCE</span><h1>{"Good morning, " + (data?.profile.name.split(" ")[0] || "there")}</h1><p>Your sample account position and recent activity.</p></div><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div> : <div className="page-meta"><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div>}
+      {view === "Overview" ? <div className="page-heading"><div><span className="eyebrow">MONDAY · YOUR MONEY AT A GLANCE</span><h1>{"Good morning, " + (data?.profile.name.split(" ")[0] || "there")}</h1><p>Your account position and recent activity.</p></div><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div> : <div className="page-meta"><span className="as-of">As of {new Date(data?.updatedAt || Date.now()).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })} IST</span></div>}
       {view === "Overview" && <section className="overview-art-banner"><div><span className="eyebrow">BYTEBHARAT · YOUR FINANCIAL OVERVIEW</span><h2>Everyday banking,<br/>at a glance.</h2><p>Accounts, savings and activity in one place.</p></div><img src={overviewArt} alt="Savings, growth and cards illustration" /></section>}
-      {view === "Overview" && <div className="overview-summary"><span><b>{money(totalBalance)}</b> total across {data?.accounts.length || 0} sample accounts</span><span className="summary-status"><i /> API connected</span></div>}
+      {view === "Overview" && <div className="overview-summary"><span><b>{money(totalBalance)}</b> total across {data?.accounts.length || 0} accounts</span><span className="summary-status"><i /> API connected</span></div>}
       {page}
-      <footer className="page-footer">ByteBharat is a fictional prototype. Sample data only · No real banking or payment services are connected.</footer>
+      <footer className="page-footer">No bank or payment network is connected. Transfers do not move real funds.</footer>
     </main>
     {drawer && <CustomizePanel layout={layout} setLayout={setLayout} theme={theme} setTheme={setTheme} compact={compact} setCompact={setCompact} close={() => setDrawer(false)} />}
   </div>;
 }
-

@@ -18,14 +18,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class LoanService {
-    private static final String DEMO_USER = "demo";
+    private static final String BANKING_USER = "customer";
     private static final BigDecimal ANNUAL_RATE = new BigDecimal("12.00");
     private final ProductDataPort products;
     private final AtomicLong sequence = new AtomicLong(1003);
 
     public LoanService(ProductDataPort products) {
         this.products = products;
-        seedDemoLoans();
+        seedInitialLoans();
     }
 
     public List<Loan> loans(String userId) { return products.loans(userId); }
@@ -67,10 +67,10 @@ public class LoanService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found."));
     }
 
-    private void seedDemoLoans() {
+    private void seedInitialLoans() {
         LocalDate today = LocalDate.now();
-        products.saveLoan(DEMO_USER, createLoan("LN-2001", new BigDecimal("500000.00"), 36, "Home improvement", today));
-        products.saveLoan(DEMO_USER, createLoan("LN-2002", new BigDecimal("150000.00"), 24, "Education", today));
+        products.saveLoan(BANKING_USER, createLoan("LN-2001", new BigDecimal("500000.00"), 36, "Home improvement", today));
+        products.saveLoan(BANKING_USER, createLoan("LN-2002", new BigDecimal("150000.00"), 24, "Education", today));
     }
 
     private Loan createLoan(String id, BigDecimal amount, int months, String purpose, LocalDate appliedOn) {

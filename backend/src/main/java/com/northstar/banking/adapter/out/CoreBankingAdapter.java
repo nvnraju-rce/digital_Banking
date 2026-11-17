@@ -1,6 +1,6 @@
 package com.northstar.banking.adapter.out;
 
-import com.northstar.banking.core.MockCoreBankingService;
+import com.northstar.banking.core.CoreBankingService;
 import com.northstar.banking.model.BankingModels.Account;
 import com.northstar.banking.model.BankingModels.AccountStatement;
 import com.northstar.banking.model.BankingModels.BankCard;
@@ -15,56 +15,56 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-public class MockCoreBankingAdapter implements CoreBankingPort, AccountLedgerPort {
-    private final MockCoreBankingService mockCore;
+public class CoreBankingAdapter implements CoreBankingPort, AccountLedgerPort {
+    private final CoreBankingService coreLedger;
 
-    public MockCoreBankingAdapter(MockCoreBankingService mockCore) {
-        this.mockCore = mockCore;
+    public CoreBankingAdapter(CoreBankingService coreLedger) {
+        this.coreLedger = coreLedger;
     }
 
     @Override
     public DashboardResponse dashboard() {
-        return mockCore.dashboard();
+        return coreLedger.dashboard();
     }
 
     @Override
     public Account openAccount(CasaRequest request) {
-        return mockCore.openCasa(request);
+        return coreLedger.openCasa(request);
     }
 
     @Override
     public Account accountDetails(String accountId) {
-        return mockCore.accountDetails(accountId);
+        return coreLedger.accountDetails(accountId);
     }
 
     @Override
     public AccountStatement accountStatement(String accountId) {
-        return mockCore.accountStatement(accountId);
+        return coreLedger.accountStatement(accountId);
     }
 
     @Override
     public TransferResponse transfer(TransferRequest request) {
-        return mockCore.transfer(request);
+        return coreLedger.transfer(request);
     }
 
     @Override
     public BankCard setCardFrozen(String cardId, boolean frozen) {
-        return mockCore.setCardFrozen(cardId, frozen);
+        return coreLedger.setCardFrozen(cardId, frozen);
     }
 
     @Override
     public TransferResponse transferOwnAccounts(TransferRequest request) {
-        return mockCore.transfer(request);
+        return coreLedger.transfer(request);
     }
 
     @Override
     public void debitForPayment(String sourceAccountId, BigDecimal paymentAmount, BigDecimal fee,
                                 String category, String memo) {
-        mockCore.debitForPayment(sourceAccountId, paymentAmount, fee, category, memo);
+        coreLedger.debitForPayment(sourceAccountId, paymentAmount, fee, category, memo);
     }
 
     @Override
     public void reserveForDeposit(String sourceAccountId, BigDecimal principal) {
-        mockCore.reserveForDeposit(sourceAccountId, principal);
+        coreLedger.reserveForDeposit(sourceAccountId, principal);
     }
 }

@@ -17,12 +17,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class MockCoreBankingService {
+public class CoreBankingService {
     private final Map<String, Account> accounts = new LinkedHashMap<>();
     private final List<Transaction> transactions = new ArrayList<>();
     private final List<BankCard> cards = new ArrayList<>();
     private final AtomicLong sequence = new AtomicLong(9006);
-    private final Profile profile = new Profile("Account Holder", "AH", "DEMO-10042", "2023");
+    private final Profile profile = new Profile("Account Holder", "AH", "CUSTOMER-10042", "2023");
     private final Insights insights = new Insights(
             new BigDecimal("12843.00"), new BigDecimal("100000.00"), new BigDecimal("68000.00"),
             List.of(new CategorySpend("Home & bills", new BigDecimal("4826.00"), "#496dea"),
@@ -33,7 +33,7 @@ public class MockCoreBankingService {
             List.of(new BigDecimal("2430.00"), new BigDecimal("2860.00"),
                     new BigDecimal("3190.00"), new BigDecimal("4363.00")));
 
-    public MockCoreBankingService() {
+    public CoreBankingService() {
         accounts.put("ACC-2048", new Account("ACC-2048", "Everyday account", "Savings",
                 "•••• 2048", new BigDecimal("84205.55"), "INR", "ACTIVE"));
         accounts.put("ACC-8831", new Account("ACC-8831", "Growth savings", "Savings",
@@ -52,7 +52,7 @@ public class MockCoreBankingService {
 
     public synchronized Account accountDetails(String accountId) {
         Account account = accounts.get(accountId);
-        if (account == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demo account was not found.");
+        if (account == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Account was not found.");
         return account;
     }
 
@@ -74,7 +74,7 @@ public class MockCoreBankingService {
         if(source==null)throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Funding account was not found.");
         if(principal==null||principal.signum()<=0||source.balance().compareTo(principal)<0)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Deposit principal must be positive and within the available account balance.");
         accounts.put(source.id(),withBalance(source,source.balance().subtract(principal)));
-        transactions.add(0,new Transaction("TX-"+sequence.incrementAndGet(),source.id(),"Fixed deposit opened","Deposit",principal.negate(),now(),"DEMO","Demo deposit funding"));
+        transactions.add(0,new Transaction("TX-"+sequence.incrementAndGet(),source.id(),"Fixed deposit opened","Deposit",principal.negate(),now(),"RECORDED","Deposit funding"));
     }
     public synchronized void debitForPayment(String sourceAccountId, BigDecimal paymentAmount, BigDecimal fee, String category, String memo) {
         Account source = accounts.get(sourceAccountId);
@@ -85,8 +85,8 @@ public class MockCoreBankingService {
         if (source.balance().compareTo(total) < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds including applicable payment fees.");
         accounts.put(source.id(), withBalance(source, source.balance().subtract(total)));
         OffsetDateTime time = now();
-        transactions.add(0, new Transaction("TX-" + sequence.incrementAndGet(), source.id(), category, category, paymentAmount.negate(), time, "DEMO", memo));
-        if (safeFee.signum() > 0) transactions.add(1, new Transaction("TX-" + sequence.incrementAndGet(), source.id(), "Payment fee", "Fee", safeFee.negate(), time, "DEMO", category));
+        transactions.add(0, new Transaction("TX-" + sequence.incrementAndGet(), source.id(), category, category, paymentAmount.negate(), time, "RECORDED", memo));
+        if (safeFee.signum() > 0) transactions.add(1, new Transaction("TX-" + sequence.incrementAndGet(), source.id(), "Payment fee", "Fee", safeFee.negate(), time, "RECORDED", category));
     }
 
     public synchronized TransferResponse transfer(TransferRequest request) {
@@ -109,13 +109,13 @@ public class MockCoreBankingService {
         Account source = accounts.get(request.sourceAccountId());
         Account destination = accounts.get(request.destinationAccountId());
         if (source == null || destination == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "A selected demo account was not found.");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "A selected account was not found.");
         }
         if (source.balance().compareTo(amount) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The demo account has insufficient funds.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The account has insufficient funds.");
         }
 
-        String memo = request.memo() == null || request.memo().isBlank() ? "Demo account transfer" : request.memo().trim();
+        String memo = request.memo() == null || request.memo().isBlank() ? "Account transfer" : request.memo().trim();
         if (memo.length() > 80) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Memo must be 80 characters or fewer.");
         }
@@ -123,10 +123,10 @@ public class MockCoreBankingService {
         accounts.put(destination.id(), withBalance(destination, destination.balance().add(amount)));
         OffsetDateTime timestamp = now();
         transactions.add(0, new Transaction("TX-" + sequence.incrementAndGet(), source.id(),
-                "Transfer to " + destination.name(), "Transfer", amount.negate(), timestamp, "DEMO", memo));
+                "Transfer to " + destination.name(), "Transfer", amount.negate(), timestamp, "RECORDED", memo));
         transactions.add(1, new Transaction("TX-" + sequence.incrementAndGet(), destination.id(),
-                "Transfer from " + source.name(), "Transfer", amount, timestamp, "DEMO", memo));
-        return new TransferResponse("Demo transfer applied in memory. No real money moved.", true, dashboard());
+                "Transfer from " + source.name(), "Transfer", amount, timestamp, "RECORDED", memo));
+        return new TransferResponse("Transfer applied in memory. No real money moved.", true, dashboard());
     }
 
     public synchronized BankCard setCardFrozen(String cardId, boolean frozen) {
@@ -139,7 +139,7 @@ public class MockCoreBankingService {
                 return changed;
             }
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Demo card not found.");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found.");
     }
 
     private Account withBalance(Account a, BigDecimal value) {

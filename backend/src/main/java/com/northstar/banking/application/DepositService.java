@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class DepositService {
-    private static final String DEMO_USER = "demo";
+    private static final String BANKING_USER = "customer";
     private static final BigDecimal ANNUAL_RATE = new BigDecimal("6.75");
     private final ProductDataPort products;
     private final AccountLedgerPort ledger;
@@ -27,7 +27,7 @@ public class DepositService {
     public DepositService(ProductDataPort products, AccountLedgerPort ledger) {
         this.products = products;
         this.ledger = ledger;
-        seedDemoDeposits();
+        seedInitialDeposits();
     }
 
     public List<FixedDeposit> deposits(String userId) { return products.deposits(userId); }
@@ -61,14 +61,14 @@ public class DepositService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Fixed deposit was not found."));
     }
 
-    private void seedDemoDeposits() {
+    private void seedInitialDeposits() {
         LocalDate today = LocalDate.now();
         FixedDeposit travelFund = createDeposit("FD-1001", "ACC-8831", new BigDecimal("50000.00"), 12, today);
         FixedDeposit reserveFund = createDeposit("FD-1002", "ACC-4620", new BigDecimal("25000.00"), 24, today);
         ledger.reserveForDeposit(travelFund.sourceAccountId(), travelFund.principal());
         ledger.reserveForDeposit(reserveFund.sourceAccountId(), reserveFund.principal());
-        products.saveDeposit(DEMO_USER, travelFund);
-        products.saveDeposit(DEMO_USER, reserveFund);
+        products.saveDeposit(BANKING_USER, travelFund);
+        products.saveDeposit(BANKING_USER, reserveFund);
     }
 
     private FixedDeposit createDeposit(String id, String accountId, BigDecimal principal, int months, LocalDate openedOn) {

@@ -11,8 +11,8 @@
   <groupId>com.northstar</groupId>
   <artifactId>northstar-core-banking</artifactId>
   <version>0.1.0</version>
-  <name>ByteBharat Digital Banking Demo</name>
-  <description>Fictional core-banking API for a local React prototype</description>
+  <name>ByteBharat Digital Banking</name>
+  <description>Core banking REST API for ByteBharat digital banking</description>
   <properties>
     <java.version>21</java.version>
   </properties>

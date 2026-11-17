@@ -17,8 +17,8 @@ abstract class AbstractExternalPaymentProcessor implements PaymentProcessor {
   BigDecimal fee=feeFor(amount);String purpose=request.purpose()==null||request.purpose().isBlank()?reference:request.purpose().trim()+" · "+reference;
   ledger.debitForPayment(request.sourceAccountId(),amount,fee,"Payment · "+type.name(),purpose);
   String currency=type==PaymentType.INTERNATIONAL?request.currency().toUpperCase():"INR";
-  String message=type==PaymentType.INTERNATIONAL?"Demo payment queued; estimated 2% fee applied. No real funds moved.":"Demo payment recorded. No real funds moved.";
-  return new PaymentReceipt(reference,type.name(),"SIMULATED",amount,currency,message);
+  String message=type==PaymentType.INTERNATIONAL?"Payment queued; estimated 2% fee applied. No real funds moved.":"Payment recorded. No real funds moved.";
+  return new PaymentReceipt(reference,type.name(),"RECORDED",amount,currency,message);
  }
  protected abstract BigDecimal feeFor(BigDecimal amount);
 }

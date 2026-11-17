@@ -1,123 +1,66 @@
-# ByteBharat Digital Banking Demo
+# ByteBharat Digital Banking
 
-ByteBharat is a local full-stack digital banking learning project with a Java Spring Boot REST API and a React + Vite frontend. Its product modules reflect familiar Indian banking services. All account and customer data is fictional.
-
-## Password reset email configuration
-
-Password reset codes are sent to the registered email address through SMTP and are no longer returned by the API. Configure these environment variables for the backend before starting it:
-
-- `MAIL_HOST` and `MAIL_PORT`
-- `MAIL_USERNAME` (defaults to `bytebharat@gmail.com`) and `MAIL_PASSWORD` (set to a Google App Password)
-- `MAIL_FROM` (defaults to `MAIL_USERNAME`; use the Gmail address authorized to send)
-- `MAIL_SMTP_AUTH` and `MAIL_SMTP_STARTTLS` (optional; default to `true`)
-
-The Gmail defaults use `smtp.gmail.com`, port `587`, and STARTTLS. Before starting the backend in PowerShell, set the Google App Password in the current terminal session: `$env:MAIL_PASSWORD="your-16-character-app-password"`. Create an app password in Google Account settings after enabling 2-Step Verification. The sample text above is a placeholder; it is not a valid password. Do not put a real password in this file or commit mail credentials. When SMTP delivery fails, the reset request returns a service-unavailable error and the code is not accepted for reset.
+ByteBharat is a full-stack banking learning application with a Java Spring Boot REST API and a React + Vite frontend. Account balances and activity are maintained by the application; no financial institution or payment network is connected, and transactions do not move real funds.
 
 ## What is included
 
 - Overview, CASA accounts, fixed deposits, loan applications, payments, cards, statements, profile maintenance, and spending insights
-- Account, fixed-deposit, and loan submenus with API-backed details and statements; loan repayment schedules are illustrative
-- Mock core API for dashboard, account, transaction, and card data
-- Transfers between sample accounts update the in-memory balances and add debit/credit transaction entries
-- Demo card pause/unpause API
-- Dashboard personalization: show/hide widgets, move widgets up or down, light/dark theme, and compact spacing
-- Dashboard profiles can be exported/imported as versioned JSON; only layout and appearance settings are included
-- Monthly spending signal highlights the largest demo category with its share of tracked spending (transparent, rule-based summary; no external AI service)
-- Personalization is saved in the browser localStorage
-- Responsive layouts for laptop and mobile
+- API-backed account, deposit, and loan details and statements
+- In-memory account ledger with transfer, card, and payment operations
+- Dashboard personalization, light and dark themes, and responsive layouts
+- Password reset by email through SMTP
 
 ## Run on Windows
 
-Requirements: Java 21, Eclipse with Maven integration or Maven 3.6.3+, Node.js 20.19+ or 22.12+, and npm.
+Requirements: Java 21, Maven 3.6.3+ (or Eclipse with Maven integration), Node.js 20.19+ or 22.12+, and npm.
 
-### 1. Start the Spring Boot API in Eclipse
+### Start the API
 
-1. Extract this project ZIP.
-2. In Eclipse, choose **File → Import → Maven → Existing Maven Projects**.
-3. Browse to the extracted northstar-banking-app/backend folder and finish the import.
-4. Open BankingApplication.java, right-click, and choose **Run As → Spring Boot App**.
-5. Keep the backend running on http://localhost:8080.
-
-If Maven is installed separately, open PowerShell in the backend folder and run:
+Open PowerShell in `backend` and run:
 
     mvn spring-boot:run
 
-### 2. Start the React frontend
+The API runs at `http://localhost:8080`.
 
-Open a second PowerShell window in the frontend folder:
+### Start the frontend
+
+Open another PowerShell window in `frontend` and run:
 
     npm install
     npm run dev
 
-Open the Vite URL printed in the terminal, usually http://localhost:5173.
-Vite forwards /api requests to Spring Boot on port 8080.
+Open the Vite URL, usually `http://localhost:5173`. Vite forwards `/api` requests to port 8080.
 
-## API endpoints
+## Sign in
 
-- GET /api/health
-- GET /api/core/dashboard
-- GET /api/core/accounts
-- GET /api/core/transactions
-- GET /api/core/cards
-- POST /api/core/transfers
-- PATCH /api/core/cards/{cardId}
-- POST /api/auth/password-reset/request and /api/auth/password-reset/complete
-- GET/POST /api/modules/casa
-- GET /api/modules/casa/{accountId} and /api/modules/casa/{accountId}/statement
-- GET/POST /api/modules/deposits and /api/modules/loans
-- GET /api/modules/deposits/{depositId} and /api/modules/deposits/{depositId}/statement
-- GET /api/modules/loans/{loanId} and /api/modules/loans/{loanId}/statement
-- POST /api/modules/payments
-- GET/PATCH /api/auth/me and /api/auth/profile
+The initial account is `customer` with password `Banking@12345`. Passwords are stored as BCrypt hashes. Five consecutive invalid attempts lock the account for 15 minutes. Change the initial password before sharing a deployment.
 
-## Change the mock data
+JWTs expire after 30 minutes. The signing key is generated at startup, so sign in again after a backend restart. The browser keeps the token in memory only.
 
-Edit the account, transaction, card, and insight seed values in:
+## Password reset email
 
-backend/src/main/java/com/northstar/banking/core/MockCoreBankingService.java
+Configure `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and `MAIL_FROM` in the backend environment. Gmail defaults use SMTP on port 587 with STARTTLS. Set `MAIL_PASSWORD` to a Google App Password in the active PowerShell session; do not commit mail credentials. If email delivery fails, the reset request is rejected and the code cannot be used.
 
-Restart Spring Boot to reload the seed data. Demo transfers are held only in server memory and reset when the backend restarts.
+## API routes
 
-The dashboard widgets and appearance can be changed from the **Customize** button in the React UI. To change navigation or add a widget, edit frontend/src/App.jsx; adjust colors, spacing, and responsive behavior in frontend/src/styles.css.
+- `GET /api/health`
+- `GET /api/core/dashboard`, `/api/core/accounts`, `/api/core/transactions`, `/api/core/cards`
+- `POST /api/core/transfers` and `PATCH /api/core/cards/{cardId}`
+- `POST /api/auth/login`, `/api/auth/password-reset/request`, and `/api/auth/password-reset/complete`
+- `GET` and `POST /api/modules/casa`, `/api/modules/deposits`, and `/api/modules/loans`
+- `POST /api/modules/payments`
+- `GET` and `PATCH /api/auth/me` and `/api/auth/profile`
 
-## Important boundary
+Banking API routes require the bearer token returned by `/api/auth/login`; health and sign-in routes are public.
 
-This project is a local prototype. Login uses demo JWT authentication and H2 user records. Banking products and payment flows use fictional in-memory data; there is no bank integration, payment rail, lending decision, or real customer information. Do not enter real banking credentials or financial data.
+## Data and boundaries
 
-A production banking service needs an authorized financial-institution partner, secure identity and access management, a persistent and auditable ledger, fraud controls, encryption, security testing, and legal/compliance review. This prototype is not suitable for handling real funds or customer data.
+Account, card, deposit, loan, and payment activity is held in server memory and resets when the backend restarts. User credentials and profile details are stored in the local H2 database. The application has no bank integration, payment rail, or lending decision and must not be used for real funds or customer financial data.
 
+To change the account, transaction, card, and insight values, edit `backend/src/main/java/com/northstar/banking/core/CoreBankingService.java`. Product records are initialized in `DepositService` and `LoanService`. Restart Spring Boot to reload the in-memory ledger.
 
-## Digital banking sign-in (demo)
+The application is a modular monolith: controllers delegate to module services and outbound adapters. Payment rails use a Strategy registry through `PaymentProcessor`; account processing is isolated behind `AccountLedgerPort`.
 
-The UI signs in through `POST /api/auth/login`. Banking API routes under `/api/**` require the returned JWT bearer token; the health route and login are public. Tokens expire after 30 minutes and the demo signing key is generated at startup, so signing in again is required after a backend restart. The token is held in frontend memory and is not persisted in browser storage.
+## Frontend customization
 
-On first backend start, H2 creates the `digital_user` table and seeds a fictional account: user ID `demo`, password `Demo@12345`. Passwords are stored as BCrypt salted one-way hashes and cannot be decrypted. Five consecutive invalid password attempts lock the account for 15 minutes. H2 stores its database file at `C:\Softwares\h2\h2 database\northstar.mv.db`. The datasource uses user `sa` with a blank password for this local demo.
-
-This is a learning prototype, not production banking authentication. Use a managed identity provider and a securely configured persistent signing key for real deployments.
-
-
-### Banking modules
-
-- **Login / reset password:** JWT login and a 10-minute demo reset code. The demo code is returned to the UI instead of being sent by email/SMS.
-- **Accounts:** List sample current and savings accounts and open another demo account.
-- **Fixed deposits:** Create deposits with a sample 6.75% annual rate and an estimated maturity amount.
-- **Loans:** Submit a demo application and view an indicative EMI using a sample 12% rate; applications remain under review.
-- **Payments:** Simulate own-account, internal, domestic and international payments. International payments apply a sample 2% fee. No real network is called.
-- **Profile:** Update the demo user's name, mobile number and email.
-
-Product endpoints live under `/api/modules/**` and require the JWT. CASA, deposit, loan, and payment activity remains in memory and resets on backend restart. User credentials/profile remain in H2.
-
-
-ByteBharat brand icon source: `frontend/images/bytebharat-icon.svg`. Keep reusable visual assets in `frontend/images` and import them from the UI as needed.
-
-
-### Backend structure and extension points
-
-The reference middleware uses module boundaries, interface contracts, business-policy factories, and local/remote repository adapters. ByteBharat applies those ideas in a lightweight modular Spring application: dedicated API controllers handle accounts, deposits, loans, transactions, cards, transfers, payments, dashboard data, and health; controllers delegate business operations to module services.
-
-Payments use a Strategy registry. Each rail (`OWN`, `INTERNAL`, `DOMESTIC`, `INTERNATIONAL`) implements `PaymentProcessor`; `PaymentService` discovers registered processors through Spring dependency injection. External rails share a template for validation and ledger debit while each rail supplies its fee policy. `AccountLedgerPort` isolates payment processing from the mock core ledger, and `MockCoreBankingAdapter` implements that port. Add a rail by implementing `PaymentProcessor` (or the shared external processor template) and registering it as a Spring component; the controller and registry do not need rail-specific branches.
-
-Each REST controller has its own service: `AccountService`, `DashboardService`, `CardService`, `TransactionService`, `TransferService`, `DepositService`, `LoanService`, `PaymentService`, `AuthService`, or `HealthService`, according to its module. The banking and product services depend on outbound ports; `MockCoreBankingAdapter` and `MockProductDataAdapter` implement those ports and connect the application to the in-memory `MockCoreBankingService` ledger and product store. This keeps HTTP controllers out of the mock-data path and lets a real adapter replace the demo implementation later.
-
-This remains a modular monolith for local development: the modules share one Spring Boot process and one H2-backed user store, while demo product and ledger state remains in memory. It does not claim independent microservice deployment, service discovery, or distributed messaging.
-"# digital_Banking" 
+Use the **Customize** button to arrange dashboard widgets and change appearance. Navigation and widgets are in `frontend/src/App.jsx`; colors, spacing, and responsive behavior are in `frontend/src/styles.css`.

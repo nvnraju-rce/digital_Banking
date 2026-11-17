@@ -7,6 +7,6 @@ import java.util.Map;
 @Service
 public class HealthService {
     public Map<String, String> health() {
-        return Map.of("status", "UP", "mode", "MOCK_CORE_BANKING");
+        return Map.of("status", "UP", "mode", "ACCOUNT_LEDGER");
     }
 }
