@@ -153,3 +153,40 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#068
   .app-frame .sidebar .primary-nav:hover::after,.app-frame .sidebar .primary-nav:focus-visible::after,.app-frame .sidebar .nav-group-toggle:hover::after,.app-frame .sidebar .nav-group-toggle:focus-visible::after{opacity:1;visibility:visible}
   .app-frame .main-area{width:min(calc(100% - 84px),1440px);margin-left:84px}
 }
+
+/* Center the brand and anchor the section label to the left. */
+.app-frame .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px}
+.app-frame .topbar-left{grid-column:1;min-width:0}
+.app-frame .topbar-brand{grid-column:2;position:static;justify-self:center;transform:none}
+.app-frame .topbar-actions{grid-column:3;justify-self:end;min-width:0}
+.app-frame .topbar .breadcrumb{display:flex;align-items:center;gap:6px}
+.app-frame .topbar .breadcrumb strong{color:#fff;font-weight:850}
+@media(max-width:1100px){
+  .app-frame .topbar{height:104px;min-height:104px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:43px 40px;gap:2px 8px;padding:6px 20px}
+  .app-frame .topbar-brand{grid-column:1/-1;grid-row:1;position:static;justify-self:center;transform:none}
+  .app-frame .topbar-left{grid-column:1;grid-row:2;gap:8px}
+  .app-frame .topbar-actions{grid-column:2;grid-row:2;gap:5px}
+  .app-frame .topbar .search-box{width:min(190px,23vw)}
+  .app-frame .sidebar{top:104px}
+  .app-frame .sidebar-backdrop{inset:104px 0 0}
+  .app-frame .main-area{padding-top:124px}
+}
+@media(max-width:700px){
+  .app-frame .topbar{height:112px;min-height:112px;grid-template-rows:43px 42px;gap:3px 6px;padding:7px 12px}
+  .app-frame .topbar .brand{gap:7px;font-size:11px}
+  .app-frame .topbar .brand-mark,.app-frame .topbar .brand-mark img{width:36px;height:36px;border-radius:10px}
+  .app-frame .topbar .brand small{font-size:7px}
+  .app-frame .topbar-left{grid-column:1;grid-row:2;gap:6px}
+  .app-frame .topbar .breadcrumb{display:flex;gap:4px;font-size:9px;white-space:nowrap}
+  .app-frame .topbar .mobile-menu{display:grid;flex:0 0 32px;width:32px;height:32px}
+  .app-frame .topbar-actions{grid-column:2;grid-row:2;gap:4px}
+  .app-frame .sidebar{top:112px}
+  .app-frame .sidebar-backdrop{inset:112px 0 0}
+  .app-frame .main-area{padding-top:130px}
+}
+@media(max-width:420px){
+  .app-frame .topbar{padding-right:10px;padding-left:10px}
+  .app-frame .topbar .breadcrumb{font-size:8px}
+  .app-frame .topbar .search-box,.app-frame .topbar-actions>[aria-label="Notifications"]{display:none}
+  .app-frame .topbar .customize-button{width:32px;height:32px;justify-content:center;padding:0;font-size:0}
+}
