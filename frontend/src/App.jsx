@@ -272,6 +272,7 @@ export default function App() {
   const [inquiryItems, setInquiryItems] = useState([]);
   const [inquiryBusy, setInquiryBusy] = useState(false);
   const [view, setView] = useState("Overview");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [expandedNav, setExpandedNav] = useState({ products: true, payments: true, services: true });
   const [drawer, setDrawer] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -341,6 +342,12 @@ export default function App() {
   useEffect(() => { localStorage.setItem("northstar-layout", JSON.stringify(layout)); }, [layout]);
   useEffect(() => { localStorage.setItem("northstar-theme", theme); }, [theme]);
   useEffect(() => { localStorage.setItem("northstar-compact", String(compact)); }, [compact]);
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const closeOnEscape = (event) => { if (event.key === "Escape") setMobileNavOpen(false); };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [mobileNavOpen]);
 
   async function login(userId, password) {
     setAuthBusy(true); setAuthError("");
@@ -358,7 +365,7 @@ export default function App() {
     return apiFetch(path, { ...options, headers: { ...(options.headers || {}), Authorization: "Bearer " + token } });
   }
   async function navigate(item) {
-    setView(item); setNotice(""); document.getElementById("sidebar")?.classList.remove("open");
+    setView(item); setNotice(""); setMobileNavOpen(false);
     try {
       const route = INQUIRY_ROUTES[item];
       if (route) {
@@ -445,11 +452,12 @@ export default function App() {
     Insights: <InsightsPage insights={data.insights} />
   })[view];
   return <div className={"app-frame theme-" + theme + (compact ? " compact" : "")}>
-    <aside className="sidebar" id="sidebar"><span className="sidebar-label">PERSONAL BANKING</span><nav className="banking-nav" aria-label="Banking navigation">
+    <aside className={"sidebar" + (mobileNavOpen ? " open" : "")} id="sidebar"><span className="sidebar-label">PERSONAL BANKING</span><nav className="banking-nav" aria-label="Banking navigation">
       <button className={"nav-item primary-nav " + (view === "Overview" ? "active" : "")} onClick={() => navigate("Overview")}><Icon name="home" />Dashboard</button>
       {NAV_GROUPS.map((group) => <div className="nav-group" key={group.id}><button className="nav-group-toggle" aria-expanded={!!expandedNav[group.id]} onClick={() => setExpandedNav((current) => ({ ...current, [group.id]: !current[group.id] }))}><Icon name={group.icon} /><span>{group.label}</span><i className={expandedNav[group.id] ? "expanded" : ""}>⌄</i></button>{expandedNav[group.id] && <div className="nav-submenu">{group.items.map((item) => <div className="nav-product" key={item}><button className={"nav-item " + (view === item ? "active" : "")} onClick={() => navigate(item)}><span className="nav-dot" />{item}</button>{PRODUCT_SUBMENUS[item]?.map((subitem) => <button className={"nav-item nav-child " + (view === subitem.view ? "active" : "")} key={subitem.view} onClick={() => navigate(subitem.view)}><span className="nav-dot" />{subitem.label}</button>)}</div>)}</div>}</div>)}
     </nav><div className="sidebar-spacer" /><div className="sidebar-note"><b>Prototype mode</b><span>Transfers update only the in-memory sample ledger.</span></div><div className="profile"><span className="avatar">{data?.profile.initials || "AH"}</span><span><b>{profile?.name || data?.profile.name || "Account holder"}</b><small>Demo user · {profile?.userId || data?.profile.customerId}</small></span></div></aside>
-    <main className="main-area"><header className="topbar"><div className="topbar-left"><Brand /><button className="icon-button mobile-menu" onClick={() => document.getElementById("sidebar").classList.toggle("open")} aria-label="Open navigation"><Icon name="menu" /></button><span className="breadcrumb">Personal banking <b>/</b> {view}</span></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search demo transactions" placeholder="Search activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="icon-button" onClick={() => setNotice("You are all caught up in this demo.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
+    {mobileNavOpen && <button className="sidebar-backdrop" aria-label="Close navigation menu" onClick={() => setMobileNavOpen(false)} />}
+    <main className="main-area"><header className="topbar"><div className="topbar-left"><Brand /><button className="icon-button mobile-menu" onClick={() => setMobileNavOpen((open) => !open)} aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileNavOpen} aria-controls="sidebar"><Icon name={mobileNavOpen ? "close" : "menu"} /></button><span className="breadcrumb">Personal banking <b>/</b> {view}</span></div><div className="topbar-actions"><label className="search-box"><Icon name="search" /><input aria-label="Search demo transactions" placeholder="Search activity" value={query} onChange={(e) => setQuery(e.target.value)} /></label><button className="icon-button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label="Toggle color theme"><Icon name={theme === "light" ? "moon" : "sun"} /></button><button className="icon-button" onClick={() => setNotice("You are all caught up in this demo.")} aria-label="Notifications"><Icon name="bell" /><i className="notification-dot" /></button><button className="customize-button" onClick={() => setDrawer(true)}><Icon name="edit" size={16} />Customize</button><button className="secondary-btn" onClick={signOut}>Sign out</button></div></header>
       <div className="demo-banner">MOCK CORE BANKING · FICTIONAL INR DATA</div>
       {apiError && <div className="inline-error">{apiError}<button onClick={load}>Retry</button></div>}
       {notice && <div className="inline-notice">{notice}<button onClick={() => setNotice("")} aria-label="Dismiss">×</button></div>}

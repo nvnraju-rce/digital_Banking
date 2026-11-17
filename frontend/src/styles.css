@@ -110,3 +110,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#068
 
 /* Sidebar palette: deep teal, clear text, teal selection, copper accent. */
 .app-frame .sidebar{--menu-bg:#12343b;--menu-hover:#1b4650;--menu-active:#0d6673;--menu-text:#e2eeee;--menu-secondary:#c3d7d9;--menu-muted:#a9c3c5;--menu-accent:#e39a42;color:var(--menu-secondary);background:linear-gradient(165deg,#153e47 0%,var(--menu-bg) 58%,#0e2b32 100%)}.app-frame .sidebar .brand{color:#fff}.app-frame .sidebar .brand small{color:#bdd2d4}.app-frame .sidebar-label{color:#e4b174;font-size:10px;letter-spacing:.13em}.app-frame .nav-group-toggle{min-height:44px;padding:0 11px;color:var(--menu-text);font-size:12px;font-weight:700;letter-spacing:0}.app-frame .nav-group-toggle>svg{color:#e4aa64}.app-frame .nav-group-toggle>i{color:#c3d7d9}.app-frame .nav-group-toggle:hover{color:#fff;background:var(--menu-hover)}.app-frame .nav-submenu{gap:3px;border-left-color:#ffffff38}.app-frame .nav-submenu .nav-item{min-height:38px;padding:9px 11px;color:var(--menu-secondary);font-size:12px;font-weight:550}.app-frame .nav-submenu .nav-item:hover{color:#fff;background:var(--menu-hover)}.app-frame .nav-submenu .nav-item.active{color:#fff;background:var(--menu-active);box-shadow:inset 3px 0 var(--menu-accent)}.app-frame .nav-submenu .nav-child{min-height:35px;margin-left:10px;padding:8px 10px;font-size:11px;color:var(--menu-muted)}.app-frame .nav-submenu .nav-child.active{color:#fff;background:#0b5964;box-shadow:inset 3px 0 var(--menu-accent)}.app-frame .nav-dot{background:#a5c7c9}.app-frame .nav-submenu .nav-item.active .nav-dot{background:var(--menu-accent);box-shadow:0 0 0 3px #e39a422b}.app-frame .primary-nav{min-height:42px;color:var(--menu-text);background:#ffffff12;font-size:12px}.app-frame .primary-nav:hover{background:var(--menu-hover)}.app-frame .primary-nav.active{color:#fff;background:var(--menu-active);box-shadow:inset 3px 0 var(--menu-accent)}.app-frame .sidebar-note{border-color:#ffffff30;background:#ffffff0d}.app-frame .sidebar-note b{font-size:11px}.app-frame .sidebar-note span{color:#c3d7d9;font-size:10px}.app-frame .profile{border-top-color:#ffffff35}.app-frame .profile b{font-size:12px}.app-frame .profile small{color:#c3d7d9;font-size:10px}.app-frame .sidebar button:focus-visible{outline-color:#65d0d1}
+
+/* Responsive sidebar drawer */
+.sidebar-backdrop{display:none}
+@media(max-width:900px){
+  .app-frame .sidebar{top:72px;bottom:0;transform:translateX(calc(-100% - 16px));transition:transform .22s ease;box-shadow:14px 0 35px #0916333b}
+  .app-frame .sidebar.open{transform:translateX(0)}
+  .app-frame .sidebar-backdrop{position:fixed;z-index:14;inset:72px 0 0;display:block;width:100%;height:auto;border:0;background:#0c172b77;backdrop-filter:blur(2px)}
+  .app-frame .main-area{width:100%;max-width:none;margin-left:0}
+  .app-frame .mobile-menu{display:grid}
+}
+@media(max-width:700px){
+  .app-frame .sidebar{top:64px}
+  .app-frame .sidebar-backdrop{inset:64px 0 0}
+  .app-frame .main-area{padding-top:82px}
+  .app-frame .topbar-left{gap:8px}
+  .app-frame .mobile-menu{flex:0 0 36px}
+}
